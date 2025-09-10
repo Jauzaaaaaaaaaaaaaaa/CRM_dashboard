@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override menu CRM utama -->
+    <record id="crm.crm_menu_root" model="ir.ui.menu">
+        <field name="action" ref="crm_ext_action_dashboard"/>
+    </record>
+</odoo>

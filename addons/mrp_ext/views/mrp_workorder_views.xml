@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="mrp_production_workorder_tree_editable_view_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.work.order.tree.editable.inherit</field>
+            <field name="model">mrp.workorder</field>
+            <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='duration']" position="after">
+                    <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                    <field name="pic_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="mrp_production_workorder_form_view_inherit_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.work.order.form.inherit</field>
+            <field name="model">mrp.workorder</field>
+            <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='workcenter_id']" position="after">
+                    <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                    <field name="pic_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

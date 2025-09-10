@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<odoo>
+    <!-- Pipeline Action (ganti dari Dashboard) -->
+    <record id="crm_ext_action_pipeline" model="ir.actions.act_window">
+        <field name="name">Pipeline</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form,calendar,activity</field>
+        <field name="domain">[('type','=','opportunity')]</field>
+    </record>
+
+    <!-- Pipeline Menu -->
+    <menuitem 
+        id="crm_ext_menu_pipeline"
+        name="Pipeline"
+        parent="crm.crm_menu_root" 
+        action="crm_ext_action_pipeline"
+        sequence="90"/>
+</odoo>

@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<odoo>
+    <!-- crm.tag views -->
+    <record id="crm_lead_category_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.category.view.form</field>
+        <field name="model">crm.lead.category</field>
+        <field name="arch" type="xml">
+            <form string="Lead Category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Customer Care"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="crm_lead_category_view_tree" model="ir.ui.view">
+        <field name="name">crm.lead.category.view.tree</field>
+        <field name="model">crm.lead.category</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Category" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action untuk Dashboard (hapus graph/pivot) -->
+    <record id="crm_ext_action_dashboard" model="ir.actions.act_window">
+        <field name="name">CRM</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form,calendar,activity</field>
+        <field name="domain">[('type','=','opportunity')]</field>
+    </record>
+
+    <!-- Override menu root CRM supaya langsung buka dashboard -->
+    <menuitem 
+        id="crm.crm_menu_root"
+        action="crm_ext_action_dashboard"
+        sequence="0"/>
+
+
+    <!-- Lead Category Config -->
+    <record id="crm_lead_category_action" model="ir.actions.act_window">
+        <field name="name">Lead Category</field>
+        <field name="res_model">crm.lead.category</field>
+        <field name="view_id" ref="crm_lead_category_view_tree"/>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create CRM Lead Category
+            </p>
+            <p>
+                Use Lead Category to manage and track your Lead (product structure, sales type, ...)
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_crm_lead_category"
+        name="Lead Category"
+        action="crm_lead_category_action"
+        parent="crm.menu_crm_config_lead"
+        sequence="5"/>
+
+    <!-- Inherit Lead Form -->
+    <record id="crm_lead_view_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="lead_category_id" string="Lead Category"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Calendar -->
+    <record id="crm_case_calendar_view_leads_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.calendar.lead.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_calendar_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Quick Create -->
+    <record id="quick_create_opportunity_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Activity View -->
+    <record id="crm_lead_view_activity_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.view.activity.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_activity" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban -->
+    <record id="crm_case_kanban_view_leads_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban Count -->
+    <record id="crm_case_kanban_view_leads_count_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.count.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//kanban/progressbar" position="attributes">
+                <attribute name="sum_field"></attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Override Pipeline Action -->
+    <record model="ir.actions.act_window" id="crm_lead_action_pipeline_inherit">
+        <field name="name">Pipeline</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form,calendar,activity</field>
+        <field name="domain">[('type','=','opportunity')]</field>
+        <field name="context">{
+                'default_type': 'opportunity',
+                'search_default_assigned_to_me': 1
+        }</field>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+    </record>
+
+    <record id="crm_lead_action_pipeline_count_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="crm_ext.crm_case_kanban_view_leads_count_inherit"/>
+        <field name="act_window_id" ref="crm_ext.crm_lead_action_pipeline_inherit"/>
+    </record>
+
+    <!-- Tree Inherit -->
+    <record id="crm_case_tree_view_oppor" model="ir.ui.view">
+        <field name="name">crm.lead.tree.opportunity.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

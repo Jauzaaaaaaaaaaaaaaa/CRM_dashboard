@@ -1,0 +1,85 @@
+<odoo>
+  <data>
+
+        <!-- <record id="action_report_receipt" model="ir.actions.report">
+            <field name="name">Receipt Operations</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">stock.report_picking</field>
+            <field name="report_file">stock.report_picking_operations</field>
+            <field name="print_report_name">'Picking Operations'</field>
+            <field name="print_report_name">'Picking Operations - %s - %s' % (object.partner_id.name or '', object.name)</field>
+            <field name="binding_model_id" ref="model_stock_picking"/>
+            <field name="binding_type">report</field>
+        </record> -->
+
+        <!-- <record id="view_stock_receipt_form" model="ir.ui.view">
+            <field name="name">stock.picking.view.form.inherit.base.advanced.report.templates</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+               <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_id']" position="after">
+                    <field name="order_line_image" widget="image"
+                           style="height:30px;width:30px ;" readonly="1" invisible="1"/>
+               </xpath>
+               
+            </field>
+        </record> -->
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="purchase_ext.list">
+      <field name="name">purchase_ext list</field>
+      <field name="model">purchase_ext.purchase_ext</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="purchase_ext.action_window">
+      <field name="name">purchase_ext window</field>
+      <field name="res_model">purchase_ext.purchase_ext</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="purchase_ext.action_server">
+      <field name="name">purchase_ext server</field>
+      <field name="model_id" ref="model_purchase_ext_purchase_ext"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="purchase_ext" id="purchase_ext.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="purchase_ext.menu_1" parent="purchase_ext.menu_root"/>
+    <menuitem name="Menu 2" id="purchase_ext.menu_2" parent="purchase_ext.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="purchase_ext.menu_1_list" parent="purchase_ext.menu_1"
+              action="purchase_ext.action_window"/>
+    <menuitem name="Server to list" id="purchase_ext" parent="purchase_ext.menu_2"
+              action="purchase_ext.action_server"/>
+-->
+  </data>
+</odoo>

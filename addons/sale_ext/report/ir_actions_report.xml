@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sale_pdf_quote_builder.action_report_saleorder_raw" model="ir.actions.report">
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">sale_ext.report_saleorder_raw_custom</field>
+        <field name="report_file">sale_ext.report_saleorder_raw_custom</field>
+    </record>       
+  </data>
+</odoo>

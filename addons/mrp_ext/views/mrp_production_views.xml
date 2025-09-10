@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+        <record id="view_mrp_production_form_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.form.inherit</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="before">
+                    <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                    <field name="mrp_number"/>
+                </xpath>
+                <!-- Add State Field to Display Delayed State -->
+                <!-- <xpath expr="//header" position="inside">
+                    <field name="state" widget="statusbar" statusbar_visible="confirmed,progress,delayed,done,cancel" />
+                </xpath> -->
+                <!-- Add Delay and Resume Buttons -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_open_delay_wizard"
+                            string="Delay"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ['confirmed', 'progress']"/>
+                    <button name="action_resume"
+                            string="Resume"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'delayed'"/>
+                </xpath>
+                <!-- Display Delay Reason -->
+                <xpath expr="//field[@name='user_id']" position="after">
+                        <field name="delay_reason" readonly="1" invisible="state != 'delayed'"/>
+                </xpath>                
+            </field>
+        </record>
+
+        <record id="view_mrp_production_tree_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.tree.inherit</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_tree_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                    <field name="mrp_number"/>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="before">
+                    <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                    <field name="delay_reason"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
