@@ -1396,6 +1396,7 @@ export class CRMDashboard extends Component {
      * Fetches data via JSON-RPC and generates a chart using Highcharts.
      */
 funnel_chart() {
+    const self = this;
     jsonrpc('/web/dataset/call_kw/crm.lead/get_lead_stage_data', {
         model: "crm.lead",
         method: "get_lead_stage_data",
@@ -1426,7 +1427,7 @@ funnel_chart() {
             }],
         });
 
-        // ---- Pie Chart (bawah) ----
+        // ---- Pie Chart (Won vs Lost) ----
         // Ambil jumlah Won & Lost dari callbacks
         let won_count = 0;
         let lost_count = 0;
@@ -1444,26 +1445,65 @@ funnel_chart() {
             credits: { enabled: false },
             plotOptions: {
                 pie: {
-                    showInLegend: true,   // ✅ tampilkan legend warna + label
-                    dataLabels: { enabled: false }, // ❌ matikan angka di chart
-                    size: '90%'
+                    showInLegend: true,
+                    dataLabels: { enabled: false },
+                    size: '90%',
+                    cursor: 'pointer',
+                    point: {
+                        events: {
+                            click: function () {
+                                try {
+                                    if (!self || !self.action) {
+                                        console.warn("Odoo component action tidak tersedia");
+                                        return;
+                                    }
+                                    if (this.name === "Won") {
+                                        self.action.doAction({
+                                            type: 'ir.actions.act_window',
+                                            res_model: 'crm.lead',
+                                            view_mode: 'kanban',
+                                            name: 'My Pipeline',
+                                            views: [[false, 'kanban'], [false, 'form']],
+                                            target: 'current',
+                                            context: {
+                                                search_default_assigned_to_me: 1,
+                                                search_default_won: 1,
+                                            },
+                                        });
+                                    } else if (this.name === "Lost") {
+                                        self.action.doAction({
+                                            type: 'ir.actions.act_window',
+                                            res_model: 'crm.lead',
+                                            view_mode: 'kanban',
+                                            name: 'My Pipeline',
+                                            views: [[false, 'kanban'], [false, 'form']],
+                                            target: 'current',
+                                            context: {
+                                                search_default_assigned_to_me: 1,
+                                                search_default_lost: 1,
+                                            },
+                                        });
+                                    }
+                                } catch (err) {
+                                    console.error("Error saat buka pipeline dari chart:", err);
+                                }
+                            }
+                        }
+                    }
                 }
             },
             legend: {
                 align: 'right',
                 verticalAlign: 'middle',
                 layout: 'vertical',
-                itemStyle: {
-                    fontSize: '14px',
-                    fontWeight: 'normal'
-                }
+                itemStyle: { fontSize: '14px', fontWeight: 'normal' }
             },
             series: [{
                 name: 'Leads',
                 colorByPoint: true,
                 data: [
-                    { name: 'Won',  y: won_count,  color: '#FFA500' }, // oranye
-                    { name: 'Lost', y: lost_count, color: '#000000' }  // hitam
+                    { name: 'Won',  y: won_count,  color: '#FFA500' },
+                    { name: 'Lost', y: lost_count, color: '#000000' }
                 ]
             }]
         });
