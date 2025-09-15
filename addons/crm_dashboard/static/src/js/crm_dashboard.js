@@ -1503,7 +1503,7 @@ funnel_chart() {
                 colorByPoint: true,
                 data: [
                     { name: 'Won',  y: won_count,  color: '#093FB4' },
-                    { name: 'Lost', y: lost_count, color: '#ED3500' }
+                    { name: 'Lost', y: lost_count, color: '#F5D2D2' }
                 ]
             }]
         });
