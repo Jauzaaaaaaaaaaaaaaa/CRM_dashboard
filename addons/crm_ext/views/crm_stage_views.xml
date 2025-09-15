@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_stage_form_inherit_lost" model="ir.ui.view">
+        <field name="name">crm.stage.form.lost.inherit</field>
+        <field name="model">crm.stage</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Stage">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="is_won"/>
+                        <field name="fold"/>
+                        <field name="is_lost_stage"/> <!-- ✅ Checkbox baru -->
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

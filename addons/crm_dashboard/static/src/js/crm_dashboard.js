@@ -1502,8 +1502,8 @@ funnel_chart() {
                 name: 'Leads',
                 colorByPoint: true,
                 data: [
-                    { name: 'Won',  y: won_count,  color: '#FFA500' },
-                    { name: 'Lost', y: lost_count, color: '#000000' }
+                    { name: 'Won',  y: won_count,  color: '#093FB4' },
+                    { name: 'Lost', y: lost_count, color: '#ED3500' }
                 ]
             }]
         });

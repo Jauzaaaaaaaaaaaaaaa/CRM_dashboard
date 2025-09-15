@@ -30,6 +30,8 @@
         # 'report/ir_actions_report.xml',        
         'views/crm_lead_category_views.xml',
         # 'views/assets.xml',
+        'views/crm_stage.xml',
+        # 'views/crm_stage_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
