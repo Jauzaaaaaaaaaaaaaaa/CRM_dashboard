@@ -169,8 +169,10 @@ class AccountAssetAsset(models.Model):
                                   string='Category',
                                   required=True, change_default=True,
                                   readonly=True, )
-    date = fields.Date(string='Date', required=True, readonly=True,
-                       default=fields.Date.context_today)
+    # date = fields.Date(string='Date', required=True, readonly=True,
+    #                    default=fields.Date.context_today)
+    date = fields.Date(string='Date', required=True, default=fields.Date.context_today)
+    
     state = fields.Selection(
         [('draft', 'Draft'), ('open', 'Running'), ('close', 'Close')],
         'Status', required=True, copy=False, default='draft',
