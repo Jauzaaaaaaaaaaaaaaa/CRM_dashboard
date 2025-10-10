@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Place menu items under Configuration -> Pipeline -> below Tags
+         Use parent 'crm.menu_crm_tag' (standard CRM menu for Tags). If your DB has different xmlid,
+         adjust parent attribute accordingly. -->
+    <menuitem id="menu_crm_ext_config_root" name="Lead Master" parent="crm.crm_menu_config" sequence="100"/>
+
+    <menuitem id="menu_crm_lead_segmentation" name="Segmentation" parent="menu_crm_ext_config_root" action="action_crm_lead_segmentation"/>
+    <menuitem id="menu_crm_lead_type" name="Lead Type" parent="menu_crm_ext_config_root" action="action_crm_lead_type"/>
+    <menuitem id="menu_crm_lead_source" name="Lead Source" parent="menu_crm_ext_config_root" action="action_crm_lead_source"/>
+    <menuitem id="menu_crm_lead_productpotential" name="Product Potential" parent="menu_crm_ext_config_root" action="action_crm_lead_productpotential"/>
+    <menuitem id="menu_crm_lead_activitytype" name="Activity Type" parent="menu_crm_ext_config_root" action="action_crm_lead_activitytype"/>
+    <menuitem id="menu_crm_lead_competitor" name="Competitor" parent="menu_crm_ext_config_root" action="action_crm_lead_competitor"/>
+    <menuitem id="menu_crm_lead_brand_competitor" name="Brand Competitor" parent="menu_crm_ext_config_root" action="action_crm_lead_brand_competitor"/>
+    <menuitem id="menu_crm_lead_product_competitor" name="Product Competitor" parent="menu_crm_ext_config_root" action="action_crm_lead_product_competitor"/>
+</odoo>

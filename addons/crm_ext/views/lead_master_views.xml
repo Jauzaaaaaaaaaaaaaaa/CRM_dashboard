@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree + Form for Segmentation -->
+    <record id="view_crm_lead_segmentation_tree" model="ir.ui.view">
+        <field name="name">crm.lead.segmentation.tree</field>
+        <field name="model">crm.lead.segmentation</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Segmentation" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_segmentation_form" model="ir.ui.view">
+        <field name="name">crm.lead.segmentation.form</field>
+        <field name="model">crm.lead.segmentation</field>
+        <field name="arch" type="xml">
+            <form string="Lead Segmentation">
+                <sheet>
+                    <!-- <group>
+                        <field name="name"/>
+                    </group> -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Agriculture"/>
+                        </h1>
+                    </div>  
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Lead Type -->
+    <record id="view_crm_lead_type_tree" model="ir.ui.view">
+        <field name="name">crm.lead.type.tree</field>
+        <field name="model">crm.lead.type</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Type" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_type_form" model="ir.ui.view">
+        <field name="name">crm.lead.type.form</field>
+        <field name="model">crm.lead.type</field>
+        <field name="arch" type="xml">
+            <form string="Lead Type">
+                <sheet>
+                    <!-- <group>
+                        <field name="name"/>
+                    </group> -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. B2B, B2C, B2G"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Source -->
+    <record id="view_crm_lead_source_tree" model="ir.ui.view">
+        <field name="name">crm.lead.source.tree</field>
+        <field name="model">crm.lead.source</field>
+        <field name="arch" type="xml">
+            <tree string="Source of Leads" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_source_form" model="ir.ui.view">
+        <field name="name">crm.lead.source.form</field>
+        <field name="model">crm.lead.source</field>
+        <field name="arch" type="xml">
+            <form string="Source of Leads">
+                <sheet>
+                    <!-- <group>
+                        <field name="name"/>
+                    </group> -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Exhibition"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Product Potential -->
+    <record id="view_crm_lead_productpotential_tree" model="ir.ui.view">
+        <field name="name">crm.lead.productpotential.tree</field>
+        <field name="model">crm.lead.productpotential</field>
+        <field name="arch" type="xml">
+            <tree string="Product Potential" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_productpotential_form" model="ir.ui.view">
+        <field name="name">crm.lead.productpotential.form</field>
+        <field name="model">crm.lead.productpotential</field>
+        <field name="arch" type="xml">
+            <form string="Product Potential">
+                <sheet>
+                    <!-- <group>
+                        <field name="name"/>
+                    </group> -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Sekar Agri 6L"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Activity Type -->
+    <record id="view_crm_lead_activitytype_tree" model="ir.ui.view">
+        <field name="name">crm.lead.activitytype.tree</field>
+        <field name="model">crm.lead.activitytype</field>
+        <field name="arch" type="xml">
+            <tree string="Activity Type" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_activitytype_form" model="ir.ui.view">
+        <field name="name">crm.lead.activitytype.form</field>
+        <field name="model">crm.lead.activitytype</field>
+        <field name="arch" type="xml">
+            <form string="Activity Type">
+                <sheet>
+                    <!-- <group>
+                        <field name="name"/>
+                    </group> -->
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Direct Call"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Competitor -->
+    <record id="view_crm_lead_competitor_tree" model="ir.ui.view">
+        <field name="name">crm.lead.competitor.tree</field>
+        <field name="model">crm.lead.competitor</field>
+        <field name="arch" type="xml">
+            <tree string="Competitor" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_competitor_form" model="ir.ui.view">
+        <field name="name">crm.lead.competitor.form</field>
+        <field name="model">crm.lead.competitor</field>
+        <field name="arch" type="xml">
+            <form string="Competitor">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Name Competitor"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Brand Competitor -->
+    <record id="view_crm_lead_brand_competitor_tree" model="ir.ui.view">
+        <field name="name">crm.lead.brandcompetitor.tree</field>
+        <field name="model">crm.lead.brandcompetitor</field>
+        <field name="arch" type="xml">
+            <tree string="Brand Competitor" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_brand_competitor_form" model="ir.ui.view">
+        <field name="name">crm.lead.brandcompetitor.form</field>
+        <field name="model">crm.lead.brandcompetitor</field>
+        <field name="arch" type="xml">
+            <form string="Brand Competitor">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. DJI"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree + Form for Product Competitor -->
+    <record id="view_crm_lead_product_competitor_tree" model="ir.ui.view">
+        <field name="name">crm.lead.productcompetitor.tree</field>
+        <field name="model">crm.lead.productcompetitor</field>
+        <field name="arch" type="xml">
+            <tree string="Product Competitor" editable="bottom" sample="1">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_crm_lead_product_competitor_form" model="ir.ui.view">
+        <field name="name">crm.lead.productcompetitor.form</field>
+        <field name="model">crm.lead.productcompetitor</field>
+        <field name="arch" type="xml">
+            <form string="Product Competitor">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. DJI T23"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions for each master model -->
+    <record id="action_crm_lead_segmentation" model="ir.actions.act_window">
+        <field name="name">Lead Segmentations</field>
+        <field name="res_model">crm.lead.segmentation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_type" model="ir.actions.act_window">
+        <field name="name">Lead Types</field>
+        <field name="res_model">crm.lead.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_source" model="ir.actions.act_window">
+        <field name="name">Lead Sources</field>
+        <field name="res_model">crm.lead.source</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_productpotential" model="ir.actions.act_window">
+        <field name="name">Product Potentials</field>
+        <field name="res_model">crm.lead.productpotential</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_activitytype" model="ir.actions.act_window">
+        <field name="name">Activity Types</field>
+        <field name="res_model">crm.lead.activitytype</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_competitor" model="ir.actions.act_window">
+        <field name="name">Competitor</field>
+        <field name="res_model">crm.lead.competitor</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_brand_competitor" model="ir.actions.act_window">
+        <field name="name">Brand Competitor</field>
+        <field name="res_model">crm.lead.brandcompetitor</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_crm_lead_product_competitor" model="ir.actions.act_window">
+        <field name="name">Product Competitor</field>
+        <field name="res_model">crm.lead.productcompetitor</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

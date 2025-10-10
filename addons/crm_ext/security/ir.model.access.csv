@@ -1,2 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_crm_ext_crm_lead_category,crm.lead.category,model_crm_lead_category,base.group_user,1,1,1,1
+access_crm_ext_crm_lead_segmentation,access_crm_lead_segmentation,model_crm_lead_segmentation,,1,1,1,1
+access_crm_ext_crm_lead_type,access_crm_lead_type,model_crm_lead_type,,1,1,1,1
+access_crm_ext_crm_lead_source,access_crm_lead_source,model_crm_lead_source,,1,1,1,1
+access_crm_ext_crm_lead_productpotential,access_crm_lead_productpotential,model_crm_lead_productpotential,,1,1,1,1
+access_crm_ext_crm_lead_activitytype,access_crm_lead_activitytype,model_crm_lead_activitytype,,1,1,1,1
+access_crm_ext_crm_lead_competitor,access_crm_lead_competitor,model_crm_lead_competitor,,1,1,1,1
+access_crm_ext_crm_lead_brand_competitor,access_crm_lead_brand_competitor,model_crm_lead_brandcompetitor,,1,1,1,1
+access_crm_ext_crm_lead_product_competitor,access_crm_lead_product_competitor,model_crm_lead_productcompetitor,,1,1,1,1

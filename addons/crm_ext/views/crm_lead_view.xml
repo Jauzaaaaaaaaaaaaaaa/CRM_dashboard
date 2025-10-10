@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_lead_view_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                <field name="lead_category_id" string="Lead Category"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_case_calendar_view_leads_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.calendar.lead.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_calendar_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="quick_create_opportunity_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_lead_view_activity_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.view.activity.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_activity" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_case_kanban_view_leads_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="lead_category_id"/>
+            </xpath>
+            <!-- <xpath expr="//kanban" position="inside">
+                <field name="lead_count"/>
+            </xpath> -->
+        </field>
+    </record>
+    <record id="crm_case_kanban_view_leads_count_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.count.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads" />
+        <field name="arch" type="xml">            
+            <xpath expr="//kanban/progressbar" position="attributes">
+                <attribute name="sum_field"></attribute>
+            </xpath>
+        </field>
+    </record>
+    <record model="ir.actions.act_window" id="crm_lead_action_pipeline_inherit">
+        <field name="name">Pipeline</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,graph,pivot,form,calendar,activity</field>
+        <field name="domain">[('type','=','opportunity')]</field>
+        <field name="context">{
+                'default_type': 'opportunity',
+                'search_default_assigned_to_me': 1
+        }</field>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+    </record>
+    <record id="crm_lead_action_pipeline_count_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="crm_ext.crm_case_kanban_view_leads_count_inherit"/>
+        <field name="act_window_id" ref="crm_ext.crm_lead_action_pipeline_inherit"/>
+    </record>
+
+    <record id="crm_case_tree_view_oppor" model="ir.ui.view">
+        <field name="name">crm.lead.tree.opportunity.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <!-- <attribute name="help">On Hand Quantity: <t t-esc="record.product_on_hand_qty"/></attribute> -->
+                <field name="lead_category_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

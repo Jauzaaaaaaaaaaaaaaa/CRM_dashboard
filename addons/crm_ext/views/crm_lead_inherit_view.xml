@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Kanban View -->
+    <record id="quick_create_opportunity_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form" />
+        <field name="arch" type="xml">
+            <!-- Replace Organization / Contact -->
+            <xpath expr="//form/group/field[@name='partner_id']" position="attributes">
+                <attribute name="string">Company / Customer</attribute>
+            </xpath>
+            <!-- Add Contact Person + Title -->
+            <xpath expr="//form/group/field[@name='email_from']" position="before">
+                <label for="contact_name"/>
+                <div class="o_row">
+                    <field name="contact_name"/>
+                    <field name="title" placeholder="Title" domain="[]" options="{&quot;no_open&quot;: True}"/>
+                </div>
+            </xpath>
+            <!-- Leads Segmentation, Leads Type, Source of Leads, Product Potential, Battery Qty -->
+            <xpath expr="//form/group/field[@name='phone']" position="after">
+                <field name="segmentation_id"/>
+                <field name="lead_type_id"/>
+                <field name="source_id"/>
+                <field name="product_potential_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                <field name="batteray_qty"/>
+            </xpath>
+            <!-- Replace Expected Revenue -->
+            <xpath expr="//form/group/div/div/field[@name='expected_revenue']" position="attributes">
+                <attribute name="string">Potential Value</attribute>
+            </xpath>
+            <!-- Replace Expected Revenue -->
+            <xpath expr="//form/group/div/div/field[@name='priority']" position="replace">
+            </xpath>
+            <!-- Add Activity Type -->
+            <xpath expr="//form/group/field[@name='company_currency']" position="before">
+                <field name="activity_type_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+            </xpath>
+            <!-- Add Priority -->
+            <xpath expr="//form/group/field[@name='activity_type_ids']" position="after">
+                <label for="priority_level"/>
+                <div class="o_row">
+                    <field name="priority_level"/>
+                    <field name="priority" class="oe_inline" nolabel="1" widget="priority" readonly="1"/>
+                </div>
+                <field name="competitor_id"/>
+                <field name="competitor_brand_id"/>
+                <field name="competitor_product_id"/>
+                <field name="price_competitor" widget='monetary' options="{'currency_field': 'company_currency'}"/>
+                <field name="notes_competitor"/>
+            </xpath>
+        </field>
+    </record>
+    
+
+    <!-- Form View -->
+    <record id="crm_lead_view_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <!-- Replace Expected Revenue -->
+            <xpath expr="//field[@name='expected_revenue']" position="attributes">
+                <attribute name="string">Potential Value</attribute>
+            </xpath>
+            <!-- Replace Organization / Contact -->
+            <xpath expr="//group[@name='opportunity_partner']//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Company / Customer</attribute>
+            </xpath>
+            <!-- Add Contact Person + Title -->
+            <xpath expr="//group[@name='opportunity_partner']//field[@name='partner_id']" position="after">
+                <label for="contact_name"/>
+                <div class="o_row">
+                    <field name="contact_name"/>
+                    <field name="title" placeholder="Title" domain="[]" options="{&quot;no_open&quot;: True}"/>
+                </div>
+            </xpath>
+            <!-- Leads Segmentation, Leads Type, Source of Leads, Product Potential, Battery Qty -->
+            <xpath expr="//group[@name='opportunity_partner']//field[@name='lost_reason_id']" position="before">
+                <field name="segmentation_id"/>
+                <field name="lead_type_id"/>
+                <field name="source_id"/>
+                <field name="product_potential_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                <field name="batteray_qty"/>
+            </xpath>
+            <!-- Replace Expected Revenue -->
+            <xpath expr="//group/div/field[@name='priority']" position="replace">
+            </xpath>
+            <!-- Add Activity Type & Priority-->
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="activity_type_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                <label for="priority_level"/>
+                <div class="o_row">
+                    <field name="priority_level"/>
+                    <field name="priority" class="oe_inline" nolabel="1" widget="priority" readonly="1"/>
+                </div>
+                <field name="competitor_id"/>
+                <field name="competitor_brand_id"/>
+                <field name="competitor_product_id"/>
+                <field name="price_competitor" widget='monetary' options="{'currency_field': 'company_currency'}"/>
+                <field name="notes_competitor"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="crm_case_tree_view_oppor_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.tree.opportunity.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor" />
+        <field name="arch" type="xml">
+            <!-- Replace Company / Customer -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Company / Customer</attribute>
+            </xpath>
+            <!-- Replace Potential Value -->
+            <xpath expr="//field[@name='expected_revenue']" position="attributes">
+                <attribute name="string">Potential Value</attribute>
+            </xpath>
+            <!-- Add New Fields -->
+            <xpath expr="//field[@name='stage_id']" position="after">
+                <field name="segmentation_id" optional="show"/>
+                <field name="lead_type_id" optional="show"/>
+                <field name="source_id" optional="show"/>
+                <field name="product_potential_ids" optional="show" widget="many2many_tags"/>
+                <field name="batteray_qty" optional="show"/>
+                <field name="activity_type_ids" optional="show" widget="many2many_tags"/>
+                <field name="priority_level" optional="show"/>
+                <field name="competitor_id" optional="show"/>
+                <field name="competitor_brand_id" optional="show"/>
+                <field name="competitor_product_id" optional="show"/>
+                <field name="price_competitor" optional="show" sum="Price of Competitor" widget="monetary" options="{'currency_field': 'company_currency'}"/>
+                <field name="notes_competitor" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

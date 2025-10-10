@@ -8,5 +8,5 @@ class LeadCategory(models.Model):
     _name = "crm.lead.category"
     _description = 'Lead Category'
 
-    name = fields.Char('Dzzescription', required=True, translate=True)
-    active = fields.Boolean('Active', default=True)
+    name = fields.Char('Description', required=True, translate=True)
+    # active = fields.Boolean('Active', default=True)

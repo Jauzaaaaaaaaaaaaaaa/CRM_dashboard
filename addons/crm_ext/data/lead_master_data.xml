@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lead Segmentation -->
+    <record id="seg_agriculture" model="crm.lead.segmentation"><field name="name">Agriculture</field></record>
+    <record id="seg_logistic" model="crm.lead.segmentation"><field name="name">Logistic</field></record>
+    <record id="seg_military" model="crm.lead.segmentation"><field name="name">Military</field></record>
+    <record id="seg_partnership" model="crm.lead.segmentation"><field name="name">Partnership</field></record>
+    <record id="seg_entertainment" model="crm.lead.segmentation"><field name="name">Entertainment</field></record>
+    <record id="seg_mining" model="crm.lead.segmentation"><field name="name">Mining</field></record>
+    <record id="seg_others" model="crm.lead.segmentation"><field name="name">Others</field></record>
+
+    <!-- Lead Type -->
+    <record id="type_b2b" model="crm.lead.type"><field name="name">B2B</field></record>
+    <record id="type_b2c" model="crm.lead.type"><field name="name">B2C</field></record>
+    <record id="type_b2g" model="crm.lead.type"><field name="name">B2G</field></record>
+
+    <!-- Source of Leads -->
+    <record id="source_exhibition" model="crm.lead.source"><field name="name">Exhibition/Event</field></record>
+    <record id="source_inbound" model="crm.lead.source"><field name="name">Inbound Marketing</field></record>
+    <record id="source_email" model="crm.lead.source"><field name="name">Email Marketing</field></record>
+    <record id="source_coldcalling" model="crm.lead.source"><field name="name">Cold Calling</field></record>
+    <record id="source_referral" model="crm.lead.source"><field name="name">Referral</field></record>
+    <record id="source_partnership" model="crm.lead.source"><field name="name">Partnership</field></record>
+
+    <!-- Product Potential -->
+    <record id="pp_sekar_6l" model="crm.lead.productpotential"><field name="name">Sekar Agri 6L</field></record>
+    <record id="pp_sekar_10l" model="crm.lead.productpotential"><field name="name">Sekar Agri 10L</field></record>
+    <record id="pp_sekar_16l" model="crm.lead.productpotential"><field name="name">Sekar Agri 16L</field></record>
+    <record id="pp_sekar_20l" model="crm.lead.productpotential"><field name="name">Sekar Agri 20L</field></record>
+    <record id="pp_sekar_22l" model="crm.lead.productpotential"><field name="name">Sekar Agri 22L</field></record>
+    <record id="pp_sekar_30l" model="crm.lead.productpotential"><field name="name">Sekar Agri 30L</field></record>
+    <record id="pp_sekar_ss20" model="crm.lead.productpotential"><field name="name">Sekar Agri SS 20</field></record>
+    <record id="pp_sekar_ss16" model="crm.lead.productpotential"><field name="name">Sekar Agri SS 16</field></record>
+    <record id="pp_srikandi" model="crm.lead.productpotential"><field name="name">Srikandi Multipurpose</field></record>
+    <record id="pp_aksa_quad" model="crm.lead.productpotential"><field name="name">Aksa Quad</field></record>
+    <record id="pp_aksa_quad_mini" model="crm.lead.productpotential"><field name="name">Aksa Quad Mini</field></record>
+    <record id="pp_spareparts" model="crm.lead.productpotential"><field name="name">Spareparts</field></record>
+    <record id="pp_others" model="crm.lead.productpotential"><field name="name">Others</field></record>
+
+    <!-- Activity Type -->
+    <record id="act_direct_call" model="crm.lead.activitytype"><field name="name">Direct Call</field></record>
+    <record id="act_online_meeting" model="crm.lead.activitytype"><field name="name">Online Meeting</field></record>
+    <record id="act_offline_meeting" model="crm.lead.activitytype"><field name="name">Offline Meeting</field></record>
+    <record id="act_demo" model="crm.lead.activitytype"><field name="name">Demo</field></record>
+    <record id="act_chat" model="crm.lead.activitytype"><field name="name">Chat</field></record>
+    <record id="act_offline_presentation" model="crm.lead.activitytype"><field name="name">Offline Presentation</field></record>
+    <record id="act_online_presentation" model="crm.lead.activitytype"><field name="name">Online Presentation</field></record>
+    <record id="act_training" model="crm.lead.activitytype"><field name="name">Training</field></record>
+    <record id="act_negotiation" model="crm.lead.activitytype"><field name="name">Negotiation Meeting</field></record>
+    <record id="act_others" model="crm.lead.activitytype"><field name="name">Others</field></record>
+
+    <!-- Competitor Name -->
+    <record id="cpt_halo_robitcs" model="crm.lead.competitor"><field name="name">PT Halo Robotics</field></record>
+    <record id="cpt_tanikaya_multi_sarana" model="crm.lead.competitor"><field name="name">PT Tanikaya Multi Sarana</field></record>
+    <record id="cpt_terra_drone_indonesia" model="crm.lead.competitor"><field name="name">PT Terra Drone Indonesia</field></record>
+
+    <!-- Competitor Brand Name -->
+    <record id="cpt_dji" model="crm.lead.brandcompetitor"><field name="name">DJI</field></record>
+    <record id="cpt_tanikaya" model="crm.lead.brandcompetitor"><field name="name">Tanikaya</field></record>
+    <record id="cpt_terra_drone" model="crm.lead.brandcompetitor"><field name="name">Terra Drone</field></record>
+
+    <!-- Competitor Product Name -->
+    <record id="cpt_dji_t23" model="crm.lead.productcompetitor"><field name="name">DJI T23</field></record>
+    <record id="cpt_dji_t24" model="crm.lead.productcompetitor"><field name="name">DJI T24</field></record>
+    <record id="cpt_dji_t25" model="crm.lead.productcompetitor"><field name="name">DJI T25</field></record>
+    <record id="cpt_dji_t26" model="crm.lead.productcompetitor"><field name="name">DJI T26</field></record>
+    <record id="cpt_dji_t27" model="crm.lead.productcompetitor"><field name="name">DJI T27</field></record>
+    <record id="cpt_dji_t28" model="crm.lead.productcompetitor"><field name="name">DJI T28</field></record>
+    <record id="cpt_dji_t29" model="crm.lead.productcompetitor"><field name="name">DJI T29</field></record>
+    <record id="cpt_dji_t30" model="crm.lead.productcompetitor"><field name="name">DJI T30</field></record>
+    <record id="cpt_eft_t30" model="crm.lead.productcompetitor"><field name="name">EFT G20L</field></record>
+    <record id="cpt_airazor_20l" model="crm.lead.productcompetitor"><field name="name">Airazor 20L</field></record>
+</odoo>
