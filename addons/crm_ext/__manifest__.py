@@ -22,12 +22,13 @@
     'data': [
         'security/ir.model.access.csv',
         'data/lead_master_data.xml',
+        'data/timestep_data.xml',
         # 'views/crm_lead_view.xml',
         # 'views/crm_lead_category_views.xml'
         'views/lead_master_views.xml',
         'views/lead_master_menu.xml',
         'views/crm_lead_inherit_view.xml',
-        
+                
     ],
     # only loaded in demonstration mode
     'demo': [

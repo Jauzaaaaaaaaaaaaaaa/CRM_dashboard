@@ -61,6 +61,11 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form" />
         <field name="arch" type="xml">
+            <!-- Add Button Force Recycle -->
+            <xpath expr="//header" position="inside">
+                <button name="action_force_recycle_by_timestep" type="object" class="btn btn-warning" string="Force Recycle"/>
+                <!-- <button name="action_recompute_timestep_deadline" type="object" class="btn btn-secondary" string="Recompute Deadline"/> -->
+            </xpath>
             <!-- Replace Expected Revenue -->
             <xpath expr="//field[@name='expected_revenue']" position="attributes">
                 <attribute name="string">Potential Value</attribute>
@@ -87,6 +92,15 @@
             </xpath>
             <!-- Replace Expected Revenue -->
             <xpath expr="//group/div/field[@name='priority']" position="replace">
+            </xpath>
+            <!-- TimeSteps -->
+            <xpath expr="//field[@name='user_id']" position="before">
+                <field name="timestep_deadline_long" readonly="1"/>
+                <!-- <field name="timestep_deadline" readonly="1"/> -->
+                <field name="last_timestep_notification" readonly="1"/>
+                <!-- <field name="timestep_recycled" readonly="1"/> -->
+                <field name="timestep_recycled"/>
+                <field name="note_timestep" readonly="1"/>
             </xpath>
             <!-- Add Activity Type & Priority-->
             <xpath expr="//field[@name='tag_ids']" position="after">
@@ -121,6 +135,7 @@
             </xpath>
             <!-- Add New Fields -->
             <xpath expr="//field[@name='stage_id']" position="after">
+                <field name="timestep_deadline" string="Recycle Deadline" optional="show"/>
                 <field name="segmentation_id" optional="show"/>
                 <field name="lead_type_id" optional="show"/>
                 <field name="source_id" optional="show"/>
