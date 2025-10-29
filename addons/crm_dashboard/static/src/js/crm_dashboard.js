@@ -727,49 +727,47 @@ export class CRMDashboard extends Component {
             args: ['6'],
             kwargs: {},
         }).then(function(result) {
-            var ctx = document.getElementById("canvas").getContext('2d');
-            // Define the data
-            var lost_reason = result.month // Add data values to array
-            var count = result.count;
-            var myChart = new Chart(ctx, {
+            const canvas = document.getElementById("canvas");
+            if (!canvas) {
+                console.warn("Canvas element not found — Admin CRM section is hidden.");
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+
+            const lost_reason = result.month;
+            const count = result.count;
+
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: lost_reason, //x axis
+                    labels: lost_reason,
                     datasets: [{
-                        label: 'Count', // Name the series
-                        data: count, // Specify the data values array
+                        label: 'Count',
+                        data: count,
                         backgroundColor: '#66aecf',
                         borderColor: '#66aecf',
                         barPercentage: 0.5,
                         barThickness: 6,
                         maxBarThickness: 8,
                         minBarLength: 0,
-                        borderWidth: 1, // Specify bar border width
-                        type: 'bar', // Set this data to a line chart
+                        borderWidth: 1,
                         fill: false
                     }]
                 },
                 options: {
                     scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                        y: { beginAtZero: true }
                     },
-                    responsive: true, // Instruct chart js to respond nicely.
-                    maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+                    responsive: true,
+                    maintainAspectRatio: false,
                 }
             });
         });
     }
-    /**
-     * Handles the click event for displaying total lost CRM data for the last 12 months.
-     * Retrieves and displays the data using Chart.js in a bar chart format.
-     * If the user is a manager, it fetches data for the last 12 months.
-     * @param {Event} ev - The event object.
-     */
+
     onclick_lost_last_12months(ev) {
         var self = this;
-        if (self.is_manager == true) {
+        if (self.is_manager === true) {
             self.initial_render = true;
             jsonrpc('/web/dataset/call_kw/crm.lead/get_total_lost_crm', {
                 model: "crm.lead",
@@ -777,40 +775,43 @@ export class CRMDashboard extends Component {
                 args: ['12'],
                 kwargs: {},
             }).then(function(result) {
-                var ctx = document.getElementById("canvas").getContext('2d');
-                // Define the data
-                var lost_reason = result.month // Add data values to array
-                var count = result.count;
-                var myChart = new Chart(ctx, {
+                const canvas = document.getElementById("canvas");
+                if (!canvas) {
+                    console.warn("Canvas element not found — Admin CRM section is hidden.");
+                    return;
+                }
+                const ctx = canvas.getContext('2d');
+
+                const lost_reason = result.month;
+                const count = result.count;
+
+                new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: lost_reason, //x axis
+                        labels: lost_reason,
                         datasets: [{
-                            label: 'Count', // Name the series
-                            data: count, // Specify the data values array
+                            label: 'Count',
+                            data: count,
                             backgroundColor: '#66aecf',
                             borderColor: '#66aecf',
                             barPercentage: 0.5,
                             barThickness: 6,
                             maxBarThickness: 8,
                             minBarLength: 0,
-                            borderWidth: 1, // Specify bar border width
-                            type: 'bar', // Set this data to a line chart
+                            borderWidth: 1,
                             fill: false
                         }]
                     },
                     options: {
                         scales: {
-                            y: {
-                                beginAtZero: true
-                            },
+                            y: { beginAtZero: true },
                         },
-                        responsive: true, // Instruct chart js to respond nicely.
-                        maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+                        responsive: true,
+                        maintainAspectRatio: false,
                     }
                 });
             });
-        };
+        }
     }
     /**
      * Renders a doughnut chart to display lost leads categorized by reason.
@@ -1332,132 +1333,149 @@ export class CRMDashboard extends Component {
             });
         });
     }
-    /**
-     * Renders a bar chart to display annual target data.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
-    render_annual_chart_graph() {
-        var self = this
-        var ctx = $(".annual_target");
-        jsonrpc('/web/dataset/call_kw/crm.lead/get_the_annual_target', {
-            model: "crm.lead",
-            method: "get_the_annual_target",
-            args: [{}],
-            kwargs: {},
-        }).then(function(arrays) {
-            var data = {
-                labels: arrays[1],
-                datasets: [{
-                    label: "",
-                    data: arrays[0],
-                    backgroundColor: [
-                        "#003f5c",
-                        "#f95d6a",
-                        "#ff7c43",
-                        "#6d5c16"
-                    ],
-                    borderColor: [
-                        "#003f5c",
-                        "#f95d6a",
-                        "#ff7c43",
-                        "#6d5c16"
-                    ],
-                    borderWidth: 1
-                }, ]
-            };
-            //options
-            var options = {
-                responsive: true,
-                title: false,
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            min: 0
-                        }
-                    }]
-                }
-            };
-            //create Chart class object
-            var chart = new Chart(ctx, {
+/**
+ * Renders a bar chart to display annual target data.
+ * Fetches data via JSON-RPC and generates a chart using Chart.js.
+ */
+render_annual_chart_graph() {
+    const self = this;
+    const ctx = $(".annual_target");
+
+    jsonrpc('/web/dataset/call_kw/crm.lead/get_the_annual_target', {
+        model: "crm.lead",
+        method: "get_the_annual_target",
+        args: [{}],
+        kwargs: {},
+    }).then(function (arrays) {
+        // pastikan arrays berisi data valid
+        if (!arrays || !Array.isArray(arrays[0]) || !Array.isArray(arrays[1])) {
+            console.warn("⚠️ Data annual target tidak valid:", arrays);
+            return;
+        }
+
+        const data = {
+            labels: arrays[1],
+            datasets: [{
+                label: "",
+                data: arrays[0],
+                backgroundColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                borderColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                borderWidth: 1
+            }]
+        };
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                yAxes: [{
+                    ticks: { beginAtZero: true, min: 0 }
+                }]
+            }
+        };
+
+        // buat chart hanya jika konteks ada
+        if (ctx.length) {
+            new Chart(ctx, {
                 type: "bar",
                 data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    legend: {
-                        display: false //This will do the task
-                    },
-                }
+                options: options
             });
-        });
-    }
-    /**
-     * Renders a funnel chart displaying lead stage data.
-     * Fetches data via JSON-RPC and generates a chart using Highcharts.
-     */
+        }
+    }).catch(function (err) {
+        console.error("❌ Gagal ambil data annual target:", err);
+    });
+}
+
+/**
+ * Renders a funnel (bar + pie) chart displaying lead stage data.
+ * Fetches data via JSON-RPC and generates charts using Highcharts.
+ */
 funnel_chart() {
     const self = this;
+
     jsonrpc('/web/dataset/call_kw/crm.lead/get_lead_stage_data', {
         model: "crm.lead",
         method: "get_lead_stage_data",
         args: [{}],
         kwargs: {},
-    }).then(function(callbacks) {
+    }).then(function (callbacks) {
+        // pastikan callbacks array of [label, value]
+        if (!Array.isArray(callbacks)) {
+            console.warn("⚠️ Data funnel chart kosong atau invalid:", callbacks);
+            callbacks = [];
+        }
 
-        // ---- Bar Chart (atas) ----
-        Highcharts.chart("container", {
-            chart: { type: "column" },   // funnel → column
-            title: { text: "Opportunity by Stage" },
-            credits: { enabled: false },
-            xAxis: {
-                type: "category",
-                title: { text: "Stages" }
-            },
-            yAxis: {
-                title: { text: "Number of Leads" }
-            },
-            legend: { enabled: false },
-            series: [{
-                name: "Leads",
-                data: callbacks,   // [["New", 10], ["Qualified", 5], ["Lost", 3]]
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.y}'   // tampilkan angka di atas batang
-                }
-            }],
-        });
+        // ---- Bar Chart (Opportunity by Stage) ----
+        const barContainer = document.getElementById("container");
+        if (barContainer) {
+            const barData = callbacks.map(item => [
+                item && item[0] ? String(item[0]) : "",
+                item && item[1] ? Number(item[1]) : 0
+            ]);
+
+            Highcharts.chart(barContainer, {
+                chart: { type: "column" },
+                title: { text: "Opportunity by Stage" },
+                credits: { enabled: false },
+                xAxis: {
+                    type: "category",
+                    title: { text: "Stages" }
+                },
+                yAxis: {
+                    title: { text: "Number of Leads" }
+                },
+                legend: { enabled: false },
+                series: [{
+                    name: "Leads",
+                    data: barData,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.y}'
+                    }
+                }],
+            });
+        }
 
         // ---- Pie Chart (Won vs Lost) ----
-        // Ambil jumlah Won & Lost dari callbacks
         let won_count = 0;
         let lost_count = 0;
-        callbacks.forEach(function(item) {
-            if (item[0] === "Won") {
-                won_count = item[1];
-            } else if (item[0] === "Lost") {
-                lost_count = item[1];
-            }
+        callbacks.forEach(function (item) {
+            const name = item && item[0] ? item[0].toLowerCase() : "";
+            const value = item && item[1] ? Number(item[1]) : 0;
+            if (name === "won") won_count = value;
+            if (name === "lost") lost_count = value;
         });
 
-        Highcharts.chart("won_lost_pie", {
-            chart: { type: 'pie' },
-            title: { text: null },
-            credits: { enabled: false },
-            plotOptions: {
-                pie: {
-                    showInLegend: true,
-                    dataLabels: { enabled: false },
-                    size: '90%',
-                    cursor: 'pointer',
-                    point: {
-                        events: {
-                            click: function () {
-                                try {
-                                    if (!self || !self.action) {
-                                        console.warn("Odoo component action tidak tersedia");
-                                        return;
-                                    }
-                                    if (this.name === "Won") {
+        const pieContainer = document.getElementById("won_lost_pie");
+        if (pieContainer) {
+            Highcharts.chart(pieContainer, {
+                chart: { type: 'pie' },
+                title: { text: null },
+                credits: { enabled: false },
+                plotOptions: {
+                    pie: {
+                        showInLegend: true,
+                        dataLabels: { enabled: false },
+                        size: '90%',
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function () {
+                                    try {
+                                        if (!self || !self.action) {
+                                            console.warn("⚠️ Action Odoo tidak tersedia");
+                                            return;
+                                        }
+                                        const context = {
+                                            search_default_assigned_to_me: 1,
+                                        };
+                                        if (this.name === "Won") {
+                                            context.search_default_won = 1;
+                                        } else if (this.name === "Lost") {
+                                            context.search_default_lost = 1;
+                                        }
                                         self.action.doAction({
                                             type: 'ir.actions.act_window',
                                             res_model: 'crm.lead',
@@ -1465,51 +1483,37 @@ funnel_chart() {
                                             name: 'My Pipeline',
                                             views: [[false, 'kanban'], [false, 'form']],
                                             target: 'current',
-                                            context: {
-                                                search_default_assigned_to_me: 1,
-                                                search_default_won: 1,
-                                            },
+                                            context: context,
                                         });
-                                    } else if (this.name === "Lost") {
-                                        self.action.doAction({
-                                            type: 'ir.actions.act_window',
-                                            res_model: 'crm.lead',
-                                            view_mode: 'kanban',
-                                            name: 'My Pipeline',
-                                            views: [[false, 'kanban'], [false, 'form']],
-                                            target: 'current',
-                                            context: {
-                                                search_default_assigned_to_me: 1,
-                                                search_default_lost: 1,
-                                            },
-                                        });
+                                    } catch (err) {
+                                        console.error("❌ Error buka pipeline:", err);
                                     }
-                                } catch (err) {
-                                    console.error("Error saat buka pipeline dari chart:", err);
                                 }
                             }
                         }
                     }
-                }
-            },
-            legend: {
-                align: 'right',
-                verticalAlign: 'middle',
-                layout: 'vertical',
-                itemStyle: { fontSize: '14px', fontWeight: 'normal' }
-            },
-            series: [{
-                name: 'Leads',
-                colorByPoint: true,
-                data: [
-                    { name: 'Won',  y: won_count,  color: '#093FB4' },
-                    { name: 'Lost', y: lost_count, color: '#F5D2D2' }
-                ]
-            }]
-        });
-
+                },
+                legend: {
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    layout: 'vertical',
+                    itemStyle: { fontSize: '14px', fontWeight: 'normal' }
+                },
+                series: [{
+                    name: 'Leads',
+                    colorByPoint: true,
+                    data: [
+                        { name: 'Won', y: Number(won_count) || 0, color: '#093FB4' },
+                        { name: 'Lost', y: Number(lost_count) || 0, color: '#F5D2D2' }
+                    ]
+                }]
+            });
+        }
+    }).catch(function (err) {
+        console.error("❌ Gagal ambil data lead stage:", err);
     });
 }
+
     /**
      * Fetches lead details via JSON-RPC and appends the data to specific HTML elements.
      */

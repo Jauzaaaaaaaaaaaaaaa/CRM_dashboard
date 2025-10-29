@@ -741,476 +741,435 @@ class CRMLead(models.Model):
 
     @api.model
     def crm_year(self, kwargs):
-        """Year CRM Dropdown Filter"""
+        """Year CRM Dropdown Filter (per-user / My Leads)"""
         session_user_id = self.env.uid
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = '%s' AND Extract(Year FROM crm_lead.date_deadline) = 
-        Extract(Year FROM DATE(NOW()))''' % session_user_id)
-        record = self._cr.dictfetchall()
-        rec_ids = [item['count'] for item in record]
-        crm_lead_value = rec_ids[0]
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = %s AND crm_lead.type = 'opportunity' AND 
-        Extract(Year FROM crm_lead.date_deadline
-        ) = Extract(Year FROM DATE(NOW()))''' % session_user_id)
-        opportunity_data = self._cr.dictfetchall()
-        opportunity_data_value = [item['count'] for item in opportunity_data]
-        opportunity_value = opportunity_data_value[0]
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead
-        WHERE crm_lead.user_id = %s and type='opportunity' and active='true' AND
-        Extract(Year FROM crm_lead.date_deadline) = Extract(Year FROM 
-        DATE(NOW()))''' % session_user_id)
-        exp_revenue_data = self._cr.dictfetchall()
-        exp_revenue_data_value = [item['sum'] for item in exp_revenue_data]
-        exp_revenue_value = exp_revenue_data_value[0]
-        if exp_revenue_value is None:
-            exp_revenue_value = 0
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead
-        WHERE crm_lead.user_id = %s and type='opportunity' and active='true' and
-        stage_id=4 AND Extract(Year FROM crm_lead.date_closed) = Extract(Year
-        FROM DATE(NOW()))''' % session_user_id)
-        revenue_data = self._cr.dictfetchall()
-        revenue_data_value = [item['sum'] for item in revenue_data]
-        revenue_value = revenue_data_value[0]
-        if revenue_value is None:
-            revenue_value = 0
-        ratio_value = []
-        if revenue_value == 0:
-            ratio_value = 0
-        if revenue_value > 0:
-            self._cr.execute('''select case when b.count_two = 0 then 0 else (
-            CAST(a.count_one as float) / CAST(b.count_two as float))end as 
-            final_count from (select COUNT(id) as count_one from crm_lead 
-            WHERE crm_lead.user_id = '%s' AND crm_lead.active = True AND 
-            crm_lead.probability = 100 AND Extract(Year FROM
-            crm_lead.date_deadline) = Extract(Year FROM DATE(NOW())))a,
-            (select COUNT(id) as count_two from crm_lead WHERE crm_lead.user_id 
-            = '%s' AND crm_lead.active = False AND crm_lead.probability 
-            = 0 AND Extract(Year FROM
-            crm_lead.date_deadline) = Extract(Year FROM DATE(NOW())))b
-            ''' % (session_user_id, session_user_id))
-            ratio_value = [row[0] for row in self._cr.fetchall()]
-            ratio_value = str(ratio_value)[1:-1]
-        self._cr.execute('''SELECT active,count(active) FROM crm_lead
-        where type='opportunity' and active = true and probability = 100 and 
-        user_id=%s AND Extract(Year FROM date_closed) = Extract(Year 
-        FROM DATE(NOW())) or type='opportunity' and active = false and 
-        probability = 0 and user_id=%s
-        AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
-        GROUP BY active''' % (session_user_id, session_user_id))
-        record_opportunity = dict(self._cr.fetchall())
-        opportunity_ratio_value = 0.0
-        if record_opportunity == {}:
+
+        # 1) Total crm leads (based on date_deadline year)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
+        """, (session_user_id,))
+        crm_lead_row = self._cr.dictfetchone()
+        crm_lead_value = int(crm_lead_row['count']) if crm_lead_row and crm_lead_row['count'] is not None else 0
+
+        # 2) Total opportunities (based on date_deadline year)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
+        """, (session_user_id,))
+        opp_row = self._cr.dictfetchone()
+        opportunity_value = int(opp_row['count']) if opp_row and opp_row['count'] is not None else 0
+
+        # 3) Expected revenue (sum expected_revenue for active opportunities by date_deadline year)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND active = true
+              AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
+        """, (session_user_id,))
+        exp_rev_row = self._cr.dictfetchone()
+        exp_revenue_value = float(exp_rev_row['sum_rev'] or 0.0)
+
+        # 4) Revenue actually won (sum expected_revenue for won opportunities by date_closed year)
+        #    Assumption: won = stage_id = 4 (or probability = 100). Keep stage_id=4 because original code used it.
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_won_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND stage_id = 4
+              AND Extract(Year FROM date_closed) = Extract(Year FROM DATE(NOW()))
+        """, (session_user_id,))
+        rev_row = self._cr.dictfetchone()
+        revenue_value = float(rev_row['sum_won_rev'] or 0.0)
+
+        # 5) ratio_value: revenue realization percentage (won revenue / expected revenue * 100)
+        if exp_revenue_value > 0:
+            ratio_value = round((revenue_value / exp_revenue_value) * 100, 2)
+        else:
+            ratio_value = 0.0
+
+        # 6) opportunity counts: won vs lost using CASE to avoid AND/OR ambiguity
+        self._cr.execute("""
+            SELECT
+                SUM(CASE WHEN probability = 100 AND active = true
+                         AND Extract(Year FROM date_closed) = Extract(Year FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN probability = 0 AND active = false
+                         AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS lost_count
+            FROM crm_lead
+            WHERE type = 'opportunity' AND user_id = %s
+        """, (session_user_id,))
+        opp_counts = self._cr.dictfetchone() or {'won_count': 0, 'lost_count': 0}
+        total_won = int(opp_counts.get('won_count') or 0)
+        total_lost = int(opp_counts.get('lost_count') or 0)
+        total_compared = total_won + total_lost
+
+        # 7) opportunity_ratio_value: won / (won + lost) * 100  (as percentage)
+        if total_compared > 0:
+            opportunity_ratio_value = round((total_won / total_compared) * 100, 2)
+        else:
             opportunity_ratio_value = 0.0
-        else:
-            total_opportunity_won = record_opportunity.get(False)
-            total_opportunity_lost = record_opportunity.get(True)
-            if total_opportunity_won is None:
-                total_opportunity_won = 0
-            if total_opportunity_lost is None:
-                total_opportunity_lost = 0
-                opportunity_ratio_value = 0.0
-            if total_opportunity_lost > 0:
-                opportunity_ratio_value = round(
-                    total_opportunity_won / total_opportunity_lost, 2)
-        avg = 0
-        if crm_lead_value == 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data = self._cr.dictfetchall()
-            for rec in data:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value > 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data1 = self._cr.dictfetchall()
-            for rec in data1:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value == 0:
-            record_avg_time = 0
-        else:
-            record_avg_time = round(avg / crm_lead_value)
+
+        # 8) Average closing time (seconds) for converted leads in the same year
+        self._cr.execute("""
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_seconds
+            FROM crm_lead
+            WHERE user_id = %s
+              AND date_conversion IS NOT NULL
+              AND Extract(Year FROM date_conversion) = Extract(Year FROM DATE(NOW()))
+        """, (session_user_id,))
+        avg_row = self._cr.dictfetchone()
+        avg_seconds = float(avg_row['avg_seconds']) if avg_row and avg_row['avg_seconds'] is not None else 0.0
+        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+
+        # 9) Build and return data
         data_year = {
             'record': crm_lead_value,
             'record_op': opportunity_value,
             'record_rev_exp': exp_revenue_value,
             'record_rev': revenue_value,
-            'record_ratio': ratio_value,
-            'opportunity_ratio_value': str(opportunity_ratio_value),
+            'record_ratio': ratio_value,  # revenue realization in percent
+            'opportunity_ratio_value': opportunity_ratio_value,  # opportunity win% (0-100)
             'avg_time': record_avg_time,
         }
         return data_year
 
     @api.model
     def crm_quarter(self, kwargs):
-        """Quarter CRM Dropdown Filter"""
+        """Quarter CRM Dropdown Filter (My Leads Only)"""
         session_user_id = self.env.uid
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = '%s' AND Extract(QUARTER FROM crm_lead.date_deadline)
-         = Extract(QUARTER FROM DATE(NOW())) AND Extract(Year FROM 
-         crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))
-        ''' % session_user_id)
-        record = self._cr.dictfetchall()
-        rec_ids = [item['count'] for item in record]
-        crm_lead_value = rec_ids[0]
-        self._cr.execute('''select COUNT(id) from crm_lead  WHERE 
-        crm_lead.user_id = %s AND crm_lead.type = 'opportunity' AND 
-        Extract(QUARTER FROM crm_lead.date_deadline) = Extract(QUARTER FROM 
-        DATE(NOW())) AND Extract(Year FROM crm_lead.date_deadline
-        ) = Extract(Year FROM DATE(NOW( )))''' % session_user_id)
-        opportunity_data = self._cr.dictfetchall()
-        opportunity_data_value = [item['count'] for item in opportunity_data]
-        opportunity_value = opportunity_data_value[0]
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead 
-        WHERE crm_lead.user_id = %s and type='opportunity' and active='true' 
-        AND Extract(QUARTER FROM crm_lead.date_deadline) = 
-        Extract(QUARTER FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        exp_revenue_data = self._cr.dictfetchall()
-        exp_revenue_data_value = [item['sum'] for item in exp_revenue_data]
-        exp_revenue_value = exp_revenue_data_value[0]
-        if exp_revenue_value is None:
-            exp_revenue_value = 0
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead 
-        WHERE crm_lead.user_id = %s and type='opportunity' and active='true' 
-        and stage_id=4 AND Extract(QUARTER FROM crm_lead.date_closed) = 
-        Extract(QUARTER FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_closed) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        revenue_data = self._cr.dictfetchall()
-        revenue_data_value = [item['sum'] for item in revenue_data]
-        revenue_value = revenue_data_value[0]
-        if revenue_value is None:
-            revenue_value = 0
-        ratio_value = []
-        if revenue_value == 0:
-            ratio_value = 0
-        if revenue_value > 0:
-            self._cr.execute('''select case when b.count_two = 0 then 0 else (
-            CAST(a.count_one as float) / CAST(b.count_two as float))end as 
-            final_count from (select COUNT(id) as count_one from crm_lead 
-            WHERE crm_lead.user_id = '%s' AND crm_lead.active = True AND 
-            crm_lead.probability = 100 AND Extract(QUARTER FROM 
-            crm_lead.date_deadline) = Extract(QUARTER FROM DATE(NOW())) 
-            AND Extract(Year FROM crm_lead.date_open) = Extract(Year 
-            FROM DATE(NOW())))a,(select COUNT(id) as count_two from crm_lead 
-            WHERE crm_lead.user_id = '%s' AND crm_lead.active = False AND 
-            crm_lead.probability = 0 AND Extract(QUARTER FROM 
-            crm_lead.date_deadline) = Extract(QUARTER FROM DATE(NOW()))
-            AND Extract(Year FROM crm_lead.date_deadline) = Extract(Year 
-            FROM DATE(NOW())))b''' % (session_user_id, session_user_id))
-            ratio_value = [row[0] for row in self._cr.fetchall()]
-            ratio_value = str(ratio_value)[1:-1]
-        self._cr.execute('''SELECT active,count(active) FROM crm_lead
-        where type='opportunity' and active = true and probability = 100 and 
-        user_id=%s AND Extract(QUARTER FROM date_closed) = 
-        Extract(QUARTER FROM DATE(NOW())) AND Extract(Year FROM date_closed) 
-        = Extract(Year FROM DATE(NOW())) or type='opportunity' and active = 
-        false and probability = 0 and user_id=%s AND Extract(QUARTER FROM 
-        date_deadline) = Extract(QUARTER FROM DATE(NOW()))
-        AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
-        GROUP BY active''' % (session_user_id, session_user_id))
-        record_opportunity = dict(self._cr.fetchall())
-        opportunity_ratio_value = 0.0
-        if record_opportunity == {}:
+
+        # 1) Total CRM leads (per quarter)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND EXTRACT(QUARTER FROM date_deadline) = EXTRACT(QUARTER FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        crm_lead_row = self._cr.dictfetchone()
+        crm_lead_value = int(crm_lead_row['count']) if crm_lead_row and crm_lead_row['count'] is not None else 0
+
+        # 2) Total opportunities (per quarter)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND EXTRACT(QUARTER FROM date_deadline) = EXTRACT(QUARTER FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        opp_row = self._cr.dictfetchone()
+        opportunity_value = int(opp_row['count']) if opp_row and opp_row['count'] is not None else 0
+
+        # 3) Expected revenue (active opportunities, this quarter)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND active = true
+              AND EXTRACT(QUARTER FROM date_deadline) = EXTRACT(QUARTER FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        exp_rev_row = self._cr.dictfetchone()
+        exp_revenue_value = float(exp_rev_row['sum_rev'] or 0.0)
+
+        # 4) Won revenue (stage_id=4, date_closed in current quarter)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_won_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND stage_id = 4
+              AND EXTRACT(QUARTER FROM date_closed) = EXTRACT(QUARTER FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        rev_row = self._cr.dictfetchone()
+        revenue_value = float(rev_row['sum_won_rev'] or 0.0)
+
+        # 5) Ratio: won revenue vs expected revenue (%)
+        if exp_revenue_value > 0:
+            ratio_value = round((revenue_value / exp_revenue_value) * 100, 2)
+        else:
+            ratio_value = 0.0
+
+        # 6) Won vs Lost opportunities (My Leads only, per quarter)
+        self._cr.execute("""
+            SELECT
+                SUM(CASE WHEN probability = 100 AND active = true
+                         AND EXTRACT(QUARTER FROM date_closed) = EXTRACT(QUARTER FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN probability = 0 AND active = false
+                         AND EXTRACT(QUARTER FROM date_deadline) = EXTRACT(QUARTER FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS lost_count
+            FROM crm_lead
+            WHERE type = 'opportunity' AND user_id = %s
+        """, (session_user_id,))
+        opp_counts = self._cr.dictfetchone() or {'won_count': 0, 'lost_count': 0}
+        total_won = int(opp_counts.get('won_count') or 0)
+        total_lost = int(opp_counts.get('lost_count') or 0)
+        total_compared = total_won + total_lost
+
+        # 7) Opportunity Win Ratio (%)
+        if total_compared > 0:
+            opportunity_ratio_value = round((total_won / total_compared) * 100, 2)
+        else:
             opportunity_ratio_value = 0.0
-        else:
-            total_opportunity_won = record_opportunity.get(False)
-            total_opportunity_lost = record_opportunity.get(True)
-            if total_opportunity_won is None:
-                total_opportunity_won = 0
-            if total_opportunity_lost is None:
-                total_opportunity_lost = 0
-                opportunity_ratio_value = 0.0
-            if total_opportunity_lost > 0:
-                opportunity_ratio_value = round(
-                    total_opportunity_won / total_opportunity_lost, 2)
-        avg = 0
-        if crm_lead_value == 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data = self._cr.dictfetchall()
-            for rec in data:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value > 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data1 = self._cr.dictfetchall()
-            for rec in data1:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value == 0:
-            record_avg_time = 0
-        else:
-            record_avg_time = round(avg / crm_lead_value)
+
+        # 8) Average closing time for this quarter
+        self._cr.execute("""
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_seconds
+            FROM crm_lead
+            WHERE user_id = %s
+              AND date_conversion IS NOT NULL
+              AND EXTRACT(QUARTER FROM date_conversion) = EXTRACT(QUARTER FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_conversion) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        avg_row = self._cr.dictfetchone()
+        avg_seconds = float(avg_row['avg_seconds']) if avg_row and avg_row['avg_seconds'] is not None else 0.0
+        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+
+        # 9) Build data dictionary
         data_quarter = {
             'record': crm_lead_value,
             'record_op': opportunity_value,
             'record_rev_exp': exp_revenue_value,
             'record_rev': revenue_value,
             'record_ratio': ratio_value,
-            'opportunity_ratio_value': str(opportunity_ratio_value),
+            'opportunity_ratio_value': opportunity_ratio_value,
             'avg_time': record_avg_time,
         }
         return data_quarter
 
     @api.model
     def crm_month(self, kwargs):
-        """Month CRM Dropdown Filter"""
+        """Month CRM Dropdown Filter (My Leads Only)"""
         session_user_id = self.env.uid
 
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = '%s' AND Extract(MONTH FROM crm_lead.date_deadline) 
-        = Extract(MONTH FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        record = self._cr.dictfetchall()
-        rec_ids = [item['count'] for item in record]
-        crm_lead_value = rec_ids[0]
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = %s AND crm_lead.type = 'opportunity' AND 
-        Extract(MONTH FROM crm_lead.date_deadline) = 
-        Extract(MONTH FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_deadline) = Extract(Year FROM DATE(NOW( )))'''
-                         % session_user_id)
-        opportunity_data = self._cr.dictfetchall()
-        opportunity_data_value = [item['count'] for item in opportunity_data]
-        opportunity_value = opportunity_data_value[0]
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead 
-        WHERE crm_lead.user_id = %s and type='opportunity' and active='true' 
-        AND Extract(MONTH FROM crm_lead.date_deadline) = 
-        Extract(MONTH FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))''' %
-                         session_user_id)
-        exp_revenue_data = self._cr.dictfetchall()
-        exp_revenue_data_value = [item['sum'] for item in exp_revenue_data]
-        exp_revenue_value = exp_revenue_data_value[0]
-        if exp_revenue_value is None:
-            exp_revenue_value = 0
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from 
-        crm_lead WHERE crm_lead.user_id = %s and type='opportunity' and 
-        active='true' and stage_id=4 AND Extract(MONTH FROM 
-        crm_lead.date_closed) = Extract(MONTH FROM DATE(NOW()))
-        AND Extract(Year FROM crm_lead.date_closed) = Extract(Year 
-        FROM DATE(NOW()))''' % session_user_id)
-        revenue_data = self._cr.dictfetchall()
-        revenue_data_value = [item['sum'] for item in revenue_data]
-        revenue_value = revenue_data_value[0]
-        if revenue_value is None:
-            revenue_value = 0
-        ratio_value = []
-        if revenue_value == 0:
-            ratio_value = 0
-        if revenue_value > 0:
-            self._cr.execute('''select case when b.count_two = 0 then 0 else (
-            CAST(a.count_one as float) / CAST(b.count_two as float))end as 
-            final_count from (select COUNT(id) as count_one from crm_lead
-            WHERE crm_lead.user_id = '%s' AND crm_lead.active = True AND
-            crm_lead.probability = 100 AND Extract(MONTH FROM 
-            crm_lead.date_deadline) = Extract(MONTH FROM DATE(NOW())) 
-            AND Extract(Year FROM crm_lead.date_open) = 
-            Extract(Year FROM DATE(NOW())))a,(select COUNT(id) as 
-            count_two from crm_lead WHERE crm_lead.user_id = '%s'
-            AND crm_lead.active = False AND crm_lead.probability = 0 
-            AND Extract(MONTH FROM crm_lead.date_deadline) = 
-            Extract(MONTH FROM DATE(NOW())) AND Extract(Year FROM 
-            crm_lead.date_deadline) = Extract(Year FROM DATE(NOW())))b'''
-                             % (session_user_id, session_user_id))
-            ratio_value = [row[0] for row in self._cr.fetchall()]
-            ratio_value = str(ratio_value)[1:-1]
-        self._cr.execute('''SELECT active,count(active) FROM crm_lead
-        where type='opportunity' and active = true and probability = 100 and 
-        user_id=%s AND Extract(MONTH FROM date_closed) = 
-        Extract(MONTH FROM DATE(NOW())) AND Extract(Year FROM date_closed) 
-        = Extract(Year FROM DATE(NOW())) or type='opportunity' 
-        and active = false and probability = 0 and user_id=%s
-        AND Extract(MONTH FROM date_deadline) = Extract(MONTH FROM DATE(NOW()))
-        AND Extract(Year FROM date_deadline) = Extract(Year FROM DATE(NOW()))
-        GROUP BY active''' % (session_user_id, session_user_id))
-        record_opportunity = dict(self._cr.fetchall())
-        opportunity_ratio_value = 0.0
-        if record_opportunity == {}:
-            opportunity_ratio_value = 0.0
+        # 1) Total CRM Leads (bulan ini)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND EXTRACT(MONTH FROM date_deadline) = EXTRACT(MONTH FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        crm_lead_row = self._cr.dictfetchone()
+        crm_lead_value = int(crm_lead_row['count']) if crm_lead_row and crm_lead_row['count'] is not None else 0
+
+        # 2) Total Opportunities (bulan ini)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND EXTRACT(MONTH FROM date_deadline) = EXTRACT(MONTH FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        opp_row = self._cr.dictfetchone()
+        opportunity_value = int(opp_row['count']) if opp_row and opp_row['count'] is not None else 0
+
+        # 3) Expected Revenue (semua opportunity aktif bulan ini)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND active = true
+              AND EXTRACT(MONTH FROM date_deadline) = EXTRACT(MONTH FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        exp_rev_row = self._cr.dictfetchone()
+        exp_revenue_value = float(exp_rev_row['sum_rev'] or 0.0)
+
+        # 4) Revenue yang sudah Won (stage_id=4, bulan ini)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_won_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND stage_id = 4
+              AND EXTRACT(MONTH FROM date_closed) = EXTRACT(MONTH FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        rev_row = self._cr.dictfetchone()
+        revenue_value = float(rev_row['sum_won_rev'] or 0.0)
+
+        # 5) Ratio: Won Revenue vs Expected Revenue (%)
+        if exp_revenue_value > 0:
+            ratio_value = round((revenue_value / exp_revenue_value) * 100, 2)
         else:
-            total_opportunity_won = record_opportunity.get(False)
-            total_opportunity_lost = record_opportunity.get(True)
-            if total_opportunity_won is None:
-                total_opportunity_won = 0
-            if total_opportunity_lost is None:
-                total_opportunity_lost = 0
-                opportunity_ratio_value = 0.0
-            if total_opportunity_lost > 0:
-                opportunity_ratio_value = round(
-                    total_opportunity_won / total_opportunity_lost, 2)
-        avg = 0
-        if crm_lead_value == 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data = self._cr.dictfetchall()
-            for rec in data:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value > 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data1 = self._cr.dictfetchall()
-            for rec in data1:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        record_avg_time = 0 if crm_lead_value == 0 else round(
-            avg / crm_lead_value)
+            ratio_value = 0.0
+
+        # 6) Hitung Won vs Lost (bulan ini)
+        self._cr.execute("""
+            SELECT
+                SUM(CASE WHEN probability = 100 AND active = true
+                         AND EXTRACT(MONTH FROM date_closed) = EXTRACT(MONTH FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN probability = 0 AND active = false
+                         AND EXTRACT(MONTH FROM date_deadline) = EXTRACT(MONTH FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS lost_count
+            FROM crm_lead
+            WHERE type = 'opportunity' AND user_id = %s
+        """, (session_user_id,))
+        opp_counts = self._cr.dictfetchone() or {'won_count': 0, 'lost_count': 0}
+        total_won = int(opp_counts.get('won_count') or 0)
+        total_lost = int(opp_counts.get('lost_count') or 0)
+        total_compared = total_won + total_lost
+
+        # 7) Opportunity Win Ratio (%)
+        if total_compared > 0:
+            opportunity_ratio_value = round((total_won / total_compared) * 100, 2)
+        else:
+            opportunity_ratio_value = 0.0
+
+        # 8) Average Closing Time (bulan ini)
+        self._cr.execute("""
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_seconds
+            FROM crm_lead
+            WHERE user_id = %s
+              AND date_conversion IS NOT NULL
+              AND EXTRACT(MONTH FROM date_conversion) = EXTRACT(MONTH FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_conversion) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        avg_row = self._cr.dictfetchone()
+        avg_seconds = float(avg_row['avg_seconds']) if avg_row and avg_row['avg_seconds'] is not None else 0.0
+        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+
+        # 9) Bangun data final untuk frontend
         data_month = {
             'record': crm_lead_value,
             'record_op': opportunity_value,
             'record_rev_exp': exp_revenue_value,
             'record_rev': revenue_value,
             'record_ratio': ratio_value,
-            'opportunity_ratio_value': str(opportunity_ratio_value),
+            'opportunity_ratio_value': opportunity_ratio_value,
             'avg_time': record_avg_time,
         }
         return data_month
 
+
     @api.model
     def crm_week(self, kwargs):
-        """Week CRM Dropdown Filter"""
+        """Week CRM Dropdown Filter (My Leads Only)"""
         session_user_id = self.env.uid
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = '%s' AND Extract(MONTH FROM 
-        crm_lead.date_deadline) = Extract(MONTH FROM DATE(NOW()))
-        AND Extract(Week FROM crm_lead.date_deadline) = 
-        Extract(Week FROM DATE(NOW())) AND Extract(Year FROM 
-        crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        record = self._cr.dictfetchall()
-        rec_ids = [item['count'] for item in record]
-        crm_lead_value = rec_ids[0]
-        self._cr.execute('''select COUNT(id) from crm_lead WHERE 
-        crm_lead.user_id = %s AND crm_lead.type = 'opportunity' AND 
-        Extract(MONTH FROM crm_lead.date_deadline) = Extract(MONTH 
-        FROM DATE(NOW())) AND Extract(Week FROM crm_lead.date_deadline
-        ) = Extract(Week FROM DATE(NOW())) AND Extract(Year 
-        FROM crm_lead.date_deadline) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        opportunity_data = self._cr.dictfetchall()
-        opportunity_data_value = [item['count'] for item in opportunity_data]
-        opportunity_value = opportunity_data_value[0]
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from crm_lead 
-        WHERE crm_lead.user_id = %s and type='opportunity' 
-        and active='true' AND Extract(MONTH FROM crm_lead.date_deadline) 
-        = Extract(MONTH FROM DATE(NOW())) AND Extract(Week FROM 
-        crm_lead.date_deadline) = Extract(Week FROM DATE(NOW())) AND 
-        Extract(Year FROM crm_lead.date_deadline) = 
-        Extract(Year FROM DATE(NOW()))''' % session_user_id)
-        exp_revenue_data = self._cr.dictfetchall()
-        exp_revenue_data_value = [item['sum'] for item in exp_revenue_data]
-        exp_revenue_value = exp_revenue_data_value[0]
-        if exp_revenue_value is None:
-            exp_revenue_value = 0
-        self._cr.execute('''select SUM(crm_lead.expected_revenue) from 
-        crm_lead WHERE crm_lead.user_id = %s and type='opportunity' 
-        and active='true' and stage_id=4 AND Extract(
-        MONTH FROM crm_lead.date_closed) = Extract(MONTH FROM DATE(NOW()))
-        AND Extract(Week FROM crm_lead.date_closed) = 
-        Extract(Week FROM DATE(NOW())) AND Extract(Year 
-        FROM crm_lead.date_closed) = Extract(Year FROM DATE(NOW()))'''
-                         % session_user_id)
-        revenue_data = self._cr.dictfetchall()
-        revenue_data_value = [item['sum'] for item in revenue_data]
-        revenue_value = revenue_data_value[0]
-        if revenue_value is None:
-            revenue_value = 0
-        ratio_value = []
-        if revenue_value == 0:
-            ratio_value = 0
-        if revenue_value > 0:
-            self._cr.execute('''select case when b.count_two = 0 then 0 else (
-            CAST(a.count_one as float) / CAST(b.count_two as float))end as 
-            final_count from (select COUNT(id) as count_one from crm_lead
-            WHERE crm_lead.user_id = '%s' AND crm_lead.active = True AND
-            crm_lead.probability = 100 AND 
-            Extract(MONTH FROM crm_lead.date_deadline) = 
-            Extract(MONTH FROM DATE(NOW())) AND 
-            Extract(Week FROM crm_lead.date_deadline) = 
-            Extract(Week FROM DATE(NOW())) AND 
-            Extract(Year FROM crm_lead.date_open
-            ) = Extract(Year FROM DATE(NOW())))a,
-            (select COUNT(id) as count_two from crm_lead WHERE 
-            crm_lead.user_id = '%s' AND crm_lead.active = False AND 
-            crm_lead.probability = 0 AND Extract(MONTH 
-            FROM crm_lead.date_deadline) = Extract(MONTH FROM DATE(NOW())) 
-            AND Extract(Week FROM crm_lead.date_deadline) = 
-            Extract(Week FROM DATE(NOW())) AND Extract(Year FROM
-            crm_lead.date_deadline) = Extract(Year FROM DATE(NOW())))b
-            ''' % (session_user_id, session_user_id))
-            ratio_value = [row[0] for row in self._cr.fetchall()]
-            ratio_value = str(ratio_value)[1:-1]
-        self._cr.execute('''SELECT active,count(active) FROM crm_lead
-        where type='opportunity' and active = true and probability = 100 and
-        user_id=%s AND Extract(MONTH FROM crm_lead.date_closed) = 
-        Extract(MONTH FROM DATE(NOW())) AND Extract(Week FROM 
-        crm_lead.date_closed) = Extract(Week FROM DATE(NOW())) AND 
-        Extract(Year FROM crm_lead.date_closed) = Extract(Year FROM DATE(NOW()))
-        or type='opportunity' and active = false and probability = 0 
-        and user_id=%s AND Extract(MONTH FROM crm_lead.date_deadline) 
-        = Extract(MONTH FROM DATE(NOW())) AND 
-        Extract(Week FROM crm_lead.date_deadline) 
-        = Extract(Week FROM DATE(NOW())) AND 
-        Extract(Year FROM crm_lead.date_deadline) 
-        = Extract(Year FROM DATE(NOW()))GROUP BY active'''
-                         % (session_user_id, session_user_id))
-        record_opportunity = dict(self._cr.fetchall())
-        opportunity_ratio_value = 0.0
-        if record_opportunity == {}:
+
+        # 1️⃣ Total CRM Leads (minggu ini)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND EXTRACT(WEEK FROM date_deadline) = EXTRACT(WEEK FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        crm_lead_row = self._cr.dictfetchone()
+        crm_lead_value = int(crm_lead_row['count']) if crm_lead_row and crm_lead_row['count'] is not None else 0
+
+        # 2️⃣ Total Opportunities (minggu ini)
+        self._cr.execute("""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND EXTRACT(WEEK FROM date_deadline) = EXTRACT(WEEK FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        opp_row = self._cr.dictfetchone()
+        opportunity_value = int(opp_row['count']) if opp_row and opp_row['count'] is not None else 0
+
+        # 3️⃣ Expected Revenue (semua active opportunity minggu ini)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND active = true
+              AND EXTRACT(WEEK FROM date_deadline) = EXTRACT(WEEK FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        exp_rev_row = self._cr.dictfetchone()
+        exp_revenue_value = float(exp_rev_row['sum_rev'] or 0.0)
+
+        # 4️⃣ Revenue yang sudah Won (stage_id = 4, minggu ini)
+        self._cr.execute("""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_won_rev
+            FROM crm_lead
+            WHERE user_id = %s
+              AND type = 'opportunity'
+              AND stage_id = 4
+              AND EXTRACT(WEEK FROM date_closed) = EXTRACT(WEEK FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        rev_row = self._cr.dictfetchone()
+        revenue_value = float(rev_row['sum_won_rev'] or 0.0)
+
+        # 5️⃣ Ratio: Won Revenue vs Expected Revenue (%)
+        if exp_revenue_value > 0:
+            ratio_value = round((revenue_value / exp_revenue_value) * 100, 2)
+        else:
+            ratio_value = 0.0
+
+        # 6️⃣ Hitung Won vs Lost (My Leads, minggu ini)
+        self._cr.execute("""
+            SELECT
+                SUM(CASE WHEN probability = 100 AND active = true
+                         AND EXTRACT(WEEK FROM date_closed) = EXTRACT(WEEK FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN probability = 0 AND active = false
+                         AND EXTRACT(WEEK FROM date_deadline) = EXTRACT(WEEK FROM DATE(NOW()))
+                         AND EXTRACT(YEAR FROM date_deadline) = EXTRACT(YEAR FROM DATE(NOW()))
+                     THEN 1 ELSE 0 END) AS lost_count
+            FROM crm_lead
+            WHERE type = 'opportunity' AND user_id = %s
+        """, (session_user_id,))
+        opp_counts = self._cr.dictfetchone() or {'won_count': 0, 'lost_count': 0}
+        total_won = int(opp_counts.get('won_count') or 0)
+        total_lost = int(opp_counts.get('lost_count') or 0)
+        total_compared = total_won + total_lost
+
+        # 7️⃣ Opportunity Win Ratio (%)
+        if total_compared > 0:
+            opportunity_ratio_value = round((total_won / total_compared) * 100, 2)
+        else:
             opportunity_ratio_value = 0.0
-        else:
-            total_opportunity_won = record_opportunity.get(False)
-            total_opportunity_lost = record_opportunity.get(True)
-            if total_opportunity_won is None:
-                total_opportunity_won = 0
-            if total_opportunity_lost is None:
-                total_opportunity_lost = 0
-                opportunity_ratio_value = 0.0
-            if total_opportunity_lost > 0:
-                opportunity_ratio_value = round(
-                    total_opportunity_won / total_opportunity_lost, 2)
-        avg = 0
-        if crm_lead_value == 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data = self._cr.dictfetchall()
-            for rec in data:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value > 1:
-            self._cr.execute('''SELECT id, date_conversion, create_date
-            FROM crm_lead WHERE date_conversion IS NOT NULL;''')
-            data1 = self._cr.dictfetchall()
-            for rec in data1:
-                date_close = rec['date_conversion']
-                date_create = rec['create_date']
-                avg = (date_close - date_create).seconds
-        if crm_lead_value == 0:
-            record_avg_time = 0
-        else:
-            record_avg_time = round(avg / crm_lead_value)
+
+        # 8️⃣ Average Closing Time (minggu ini)
+        self._cr.execute("""
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_seconds
+            FROM crm_lead
+            WHERE user_id = %s
+              AND date_conversion IS NOT NULL
+              AND EXTRACT(WEEK FROM date_conversion) = EXTRACT(WEEK FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_conversion) = EXTRACT(YEAR FROM DATE(NOW()))
+        """, (session_user_id,))
+        avg_row = self._cr.dictfetchone()
+        avg_seconds = float(avg_row['avg_seconds']) if avg_row and avg_row['avg_seconds'] is not None else 0.0
+        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+
+        # 9️⃣ Return hasil ke frontend
         data_week = {
             'record': crm_lead_value,
             'record_op': opportunity_value,
             'record_rev_exp': exp_revenue_value,
             'record_rev': revenue_value,
             'record_ratio': ratio_value,
-            'opportunity_ratio_value': str(opportunity_ratio_value),
+            'opportunity_ratio_value': opportunity_ratio_value,
             'avg_time': record_avg_time,
         }
         return data_week
