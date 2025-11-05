@@ -119,25 +119,27 @@
                 </div>
             </div>
 
-            <!-- Win Ratio -->
+            <!-- Lost Ratio -->
             <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow win_ratio">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-percent text-mauve"/>
+                <div class="dashboard-card card-shadow lost_ratio">
+                    <div class="dashboard-card__icon-container bg-danger-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-percent text-danger"/>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
+                                <!-- Lost Ratio Values per Period -->
                                 <div id="ratio_this_year"/>
                                 <div id="ratio_this_quarter"/>
                                 <div id="ratio_this_month"/>
                                 <div id="ratio_this_week"/>
                             </span>
                         </h3>
-                        <h4>Customize</h4>
+                        <h4>Lost Ratio</h4>
                     </div>
                 </div>
             </div>
+
             <!-- Total Revenue (Lebar 2 kolom, tinggi sama seperti kartu lain) -->
             <div class="col-sm-12 col-md-4">
                 <div class="dashboard-card card-shadow revenue_card w-100" t-on-click="(e) => this.revenue_card(e)">

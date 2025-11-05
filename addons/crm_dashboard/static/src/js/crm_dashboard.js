@@ -174,56 +174,32 @@ export class CRMDashboard extends Component {
     onclick_this_week(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_week', {
-                model: 'crm.lead',
-                method: 'crm_week',
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(result) {
-                $('#leads_this_year').hide();
-                $('#opp_this_year').hide();
-                $('#exp_rev_this_year').hide();
-                $('#rev_this_year').hide();
-                $('#ratio_this_year').hide();
-                $('#avg_time_this_year').hide();
-                $('#total_revenue_this_year').hide();
-                $('#leads_this_quarter').hide();
-                $('#opp_this_quarter').hide();
-                $('#exp_rev_this_quarter').hide();
-                $('#rev_this_quarter').hide();
-                $('#ratio_this_quarter').hide();
-                $('#avg_time_this_quarter').hide();
-                $('#total_revenue_this_quarter').hide();
-                $('#leads_this_month').hide();
-                $('#opp_this_month').hide();
-                $('#exp_rev_this_month').hide();
-                $('#rev_this_month').hide();
-                $('#ratio_this_month').hide();
-                $('#avg_time_this_month').hide();
-                $('#total_revenue_this_month').hide();
-                $('#leads_this_week').show();
-                $('#opp_this_week').show();
-                $('#exp_rev_this_week').show();
-                $('#rev_this_week').show();
-                $('#ratio_this_week').show();
-                $('#avg_time_this_week').show();
-                $('#total_revenue_this_week').show();
-                $('#leads_this_week').empty();
-                $('#opp_this_week').empty();
-                $('#exp_rev_this_week').empty();
-                $('#rev_this_week').empty();
-                $('#ratio_this_week').empty();
-                $('#avg_time_this_week').empty();
-                $('#total_revenue_this_week').empty();
-                $('#leads_this_week').append('<span>' + result.record + '</span>');
-                $('#opp_this_week').append('<span>' + result.record_op + '</span>');
-                $('#exp_rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-                $('#rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-                $('#ratio_this_week').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
-                $('#avg_time_this_week').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
-                $('#total_revenue_this_week').append('<span>' + result.opportunity_ratio_value + '</span>');
-            })
+            model: 'crm.lead',
+            method: 'crm_week',
+            args: [{}],
+            kwargs: {},
+        })
+        .then(function(result) {
+            // Hide others
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
+
+            // Show week
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').show()
+                .empty();
+
+            // Fill data
+            $('#leads_this_week').append('<span>' + result.record + '</span>');
+            $('#opp_this_week').append('<span>' + result.record_op + '</span>');
+            $('#exp_rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
+            $('#rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
+            $('#ratio_this_week').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#avg_time_this_week').append('<span>' + result.avg_time + '&nbspsec</span>');
+            $('#total_revenue_this_week').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+        });
     }
+
     /**
      * Handles the click event for the 'this_month' option.
      * Calls a JSON-RPC method to retrieve data for the current month.
@@ -233,56 +209,32 @@ export class CRMDashboard extends Component {
     onclick_this_month(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_month', {
-                model: 'crm.lead',
-                method: 'crm_month',
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(result) {
-                $('#leads_this_year').hide();
-                $('#opp_this_year').hide();
-                $('#exp_rev_this_year').hide();
-                $('#rev_this_year').hide();
-                $('#ratio_this_year').hide();
-                $('#avg_time_this_year').hide();
-                $('#total_revenue_this_year').hide();
-                $('#leads_this_quarter').hide();
-                $('#opp_this_quarter').hide();
-                $('#exp_rev_this_quarter').hide();
-                $('#rev_this_quarter').hide();
-                $('#ratio_this_quarter').hide();
-                $('#avg_time_this_quarter').hide();
-                $('#total_revenue_this_quarter').hide();
-                $('#leads_this_week').hide();
-                $('#opp_this_week').hide();
-                $('#exp_rev_this_week').hide();
-                $('#rev_this_week').hide();
-                $('#ratio_this_week').hide();
-                $('#avg_time_this_week').hide();
-                $('#total_revenue_this_week').hide();
-                $('#leads_this_month').show();
-                $('#opp_this_month').show();
-                $('#exp_rev_this_month').show();
-                $('#rev_this_month').show();
-                $('#ratio_this_month').show();
-                $('#avg_time_this_month').show();
-                $('#total_revenue_this_month').show();
-                $('#leads_this_month').empty();
-                $('#opp_this_month').empty();
-                $('#exp_rev_this_month').empty();
-                $('#rev_this_month').empty();
-                $('#ratio_this_month').empty();
-                $('#avg_time_this_month').empty();
-                $('#total_revenue_this_month').empty();
-                $('#leads_this_month').append('<span>' + result.record + '</span>');
-                $('#opp_this_month').append('<span>' + result.record_op + '</span>');
-                $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-                $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-                $('#ratio_this_month').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
-                $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
-                $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '</span>');
-            })
+            model: 'crm.lead',
+            method: 'crm_month',
+            args: [{}],
+            kwargs: {},
+        })
+        .then(function(result) {
+            // Hide others
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
+
+            // Show month
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').show()
+                .empty();
+
+            // Fill data
+            $('#leads_this_month').append('<span>' + result.record + '</span>');
+            $('#opp_this_month').append('<span>' + result.record_op + '</span>');
+            $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
+            $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
+            $('#ratio_this_month').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec</span>');
+            $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+        });
     }
+
     /**
      * Handles the click event for the 'this_quarter' option.
      * Calls a JSON-RPC method to retrieve data for the current quarter.
@@ -292,56 +244,32 @@ export class CRMDashboard extends Component {
     onclick_this_quarter(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_quarter', {
-                model: 'crm.lead',
-                method: 'crm_quarter',
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(result) {
-                $('#leads_this_year').hide();
-                $('#opp_this_year').hide();
-                $('#exp_rev_this_year').hide();
-                $('#rev_this_year').hide();
-                $('#ratio_this_year').hide();
-                $('#avg_time_this_year').hide();
-                $('#total_revenue_this_year').hide();
-                $('#leads_this_month').hide();
-                $('#opp_this_month').hide();
-                $('#exp_rev_this_month').hide();
-                $('#rev_this_month').hide();
-                $('#ratio_this_month').hide();
-                $('#avg_time_this_month').hide();
-                $('#total_revenue_this_month').hide();
-                $('#leads_this_week').hide();
-                $('#opp_this_week').hide();
-                $('#exp_rev_this_week').hide();
-                $('#rev_this_week').hide();
-                $('#ratio_this_week').hide();
-                $('#avg_time_this_week').hide();
-                $('#total_revenue_this_week').hide();
-                $('#leads_this_quarter').show();
-                $('#opp_this_quarter').show();
-                $('#exp_rev_this_quarter').show();
-                $('#rev_this_quarter').show();
-                $('#ratio_this_quarter').show();
-                $('#avg_time_this_quarter').show();
-                $('#total_revenue_this_quarter').show();
-                $('#leads_this_quarter').empty();
-                $('#opp_this_quarter').empty();
-                $('#exp_rev_this_quarter').empty();
-                $('#rev_this_quarter').empty();
-                $('#ratio_this_quarter').empty();
-                $('#avg_time_this_quarter').empty();
-                $('#total_revenue_this_quarter').empty();
-                $('#leads_this_quarter').append('<span>' + result.record + '</span>');
-                $('#opp_this_quarter').append('<span>' + result.record_op + '</span>');
-                $('#exp_rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-                $('#rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-                $('#ratio_this_quarter').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
-                $('#avg_time_this_quarter').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
-                $('#total_revenue_this_quarter').append('<span>' + result.opportunity_ratio_value + '</span>');
-            })
+            model: 'crm.lead',
+            method: 'crm_quarter',
+            args: [{}],
+            kwargs: {},
+        })
+        .then(function(result) {
+            // Hide others
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
+
+            // Show quarter
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').show()
+                .empty();
+
+            // Fill data
+            $('#leads_this_quarter').append('<span>' + result.record + '</span>');
+            $('#opp_this_quarter').append('<span>' + result.record_op + '</span>');
+            $('#exp_rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
+            $('#rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
+            $('#ratio_this_quarter').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#avg_time_this_quarter').append('<span>' + result.avg_time + '&nbspsec</span>');
+            $('#total_revenue_this_quarter').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+        });
     }
+
     /**
      * Handles the click event for the 'this_year' option.
      * Calls a JSON-RPC method to retrieve data for the current year.
@@ -351,56 +279,32 @@ export class CRMDashboard extends Component {
     onclick_this_year(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
-                model: 'crm.lead',
-                method: 'crm_year',
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(result) {
-                $('#leads_this_quarter').hide();
-                $('#opp_this_quarter').hide();
-                $('#exp_rev_this_quarter').hide();
-                $('#rev_this_quarter').hide();
-                $('#ratio_this_quarter').hide();
-                $('#avg_time_this_quarter').hide();
-                $('#total_revenue_this_quarter').hide();
-                $('#leads_this_month').hide();
-                $('#opp_this_month').hide();
-                $('#exp_rev_this_month').hide();
-                $('#rev_this_month').hide();
-                $('#ratio_this_month').hide();
-                $('#avg_time_this_month').hide();
-                $('#total_revenue_this_month').hide();
-                $('#leads_this_week').hide();
-                $('#opp_this_week').hide();
-                $('#exp_rev_this_week').hide();
-                $('#rev_this_week').hide();
-                $('#ratio_this_week').hide();
-                $('#avg_time_this_week').hide();
-                $('#total_revenue_this_week').hide();
-                $('#leads_this_year').show();
-                $('#opp_this_year').show();
-                $('#exp_rev_this_year').show();
-                $('#rev_this_year').show();
-                $('#ratio_this_year').show();
-                $('#avg_time_this_year').show();
-                $('#total_revenue_this_year').show();
-                $('#leads_this_year').empty();
-                $('#opp_this_year').empty();
-                $('#exp_rev_this_year').empty();
-                $('#rev_this_year').empty();
-                $('#ratio_this_year').empty();
-                $('#avg_time_this_year').empty();
-                $('#total_revenue_this_year').empty();
-                $('#leads_this_year').append('<span>' + result.record + '</span>');
-                $('#opp_this_year').append('<span>' + result.record_op + '</span>');
-                $('#exp_rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-                $('#rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-                $('#ratio_this_year').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
-                $('#avg_time_this_year').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
-                $('#total_revenue_this_year').append('<span>' + result.opportunity_ratio_value + '</span>');
-            })
+            model: 'crm.lead',
+            method: 'crm_year',
+            args: [{}],
+            kwargs: {},
+        })
+        .then(function(result) {
+            // Hide others
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
+
+            // Show year
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').show()
+                .empty();
+
+            // Fill data
+            $('#leads_this_year').append('<span>' + result.record + '</span>');
+            $('#opp_this_year').append('<span>' + result.record_op + '</span>');
+            $('#exp_rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
+            $('#rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
+            $('#ratio_this_year').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#avg_time_this_year').append('<span>' + result.avg_time + '&nbspsec</span>');
+            $('#total_revenue_this_year').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+        });
     }
+
     /**
      * Handles the revenue card action.
      * Initiates an action to display revenue-related data.
