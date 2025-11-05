@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- CRM Team Form View Inherit -->
+    <record id="crm_team_view_form" model="ir.ui.view">
+        <field name="name">crm.team.view.form.inherit.crm.dashboard</field>
+        <field name="model">crm.team</field>
+        <field name="inherit_id" ref="sales_team.crm_team_view_form"/>
+        <field name="arch" type="xml">
+            <field name="alias_contact" position="after">
+                <field name="crm_lead_state_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- CRM Dashboard Action -->
+    <record id="action_crm_lead_all_dashboard" model="ir.actions.client">
+        <field name="name">CRM Dashboard</field>
+        <field name="tag">crm_dashboard</field>
+    </record>
+
+    <!-- CRM Dashboard Menu -->
+    <menuitem 
+        id="crm_dashboard_menu"
+        name="Dashboard"
+        parent="crm.crm_menu_root"
+        action="action_crm_lead_all_dashboard"
+        sequence="0"/>
+    
+
+
+</odoo>
