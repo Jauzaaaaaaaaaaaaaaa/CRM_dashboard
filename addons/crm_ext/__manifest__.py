@@ -6,7 +6,7 @@
 
     'description': """
         1) CRM Extension Master Data
-        2) CRM Dashboard
+        2) CRM Dashboard version 1
     """,
 
     'author': "AMB05",
