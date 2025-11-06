@@ -63,15 +63,15 @@
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow my_lead" t-on-click="(e) => this.my_lead(e)">
                     <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-line-chart text-mauve"/>
+                        <i class="fa fa-line-chart text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
-                                <div id="leads_this_year"/>
-                                <div id="leads_this_quarter"/>
-                                <div id="leads_this_month"/>
-                                <div id="leads_this_week"/>
+                                <div id="leads_this_year"></div>
+                                <div id="leads_this_quarter"></div>
+                                <div id="leads_this_month"></div>
+                                <div id="leads_this_week"></div>
                             </span>
                         </h3>
                         <h4>Team Leads</h4>
@@ -83,15 +83,15 @@
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow opportunity" t-on-click="(e) => this.opportunity(e)">
                     <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-trophy text-mauve"/>
+                        <i class="fa fa-trophy text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
-                                <div id="opp_this_year"/>
-                                <div id="opp_this_quarter"/>
-                                <div id="opp_this_month"/>
-                                <div id="opp_this_week"/>
+                                <div id="opp_this_year"></div>
+                                <div id="opp_this_quarter"></div>
+                                <div id="opp_this_month"></div>
+                                <div id="opp_this_week"></div>
                             </span>
                         </h3>
                         <h4>Team Opportunities</h4>
@@ -103,15 +103,15 @@
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow exp_revenue" t-on-click="(e) => this.exp_revenue(e)">
                     <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-usd text-mauve"/>
+                        <i class="fa fa-usd text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
-                                <div id="exp_rev_this_year"/>
-                                <div id="exp_rev_this_quarter"/>
-                                <div id="exp_rev_this_month"/>
-                                <div id="exp_rev_this_week"/>
+                                <div id="exp_rev_this_year"></div>
+                                <div id="exp_rev_this_quarter"></div>
+                                <div id="exp_rev_this_month"></div>
+                                <div id="exp_rev_this_week"></div>
                             </span>
                         </h3>
                         <h4>Expected Revenue</h4>
@@ -122,17 +122,17 @@
             <!-- Lost Ratio -->
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow lost_ratio">
-                    <div class="dashboard-card__icon-container bg-danger-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-percent text-danger"/>
+                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-percent text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
                                 <!-- Lost Ratio Values per Period -->
-                                <div id="ratio_this_year"/>
-                                <div id="ratio_this_quarter"/>
-                                <div id="ratio_this_month"/>
-                                <div id="ratio_this_week"/>
+                                <div id="ratio_this_year"></div>
+                                <div id="ratio_this_quarter"></div>
+                                <div id="ratio_this_month"></div>
+                                <div id="ratio_this_week"></div>
                             </span>
                         </h3>
                         <h4>Lost Ratio</h4>
@@ -168,15 +168,15 @@
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow avg_close_time">
                     <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-clock-o text-mauve"/>
+                        <i class="fa fa-clock-o text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
-                                <div id="avg_time_this_year"/>
-                                <div id="avg_time_this_quarter"/>
-                                <div id="avg_time_this_month"/>
-                                <div id="avg_time_this_week"/>
+                                <div id="avg_time_this_year"></div>
+                                <div id="avg_time_this_quarter"></div>
+                                <div id="avg_time_this_month"></div>
+                                <div id="avg_time_this_week"></div>
                             </span>
                         </h3>
                         <h4>Average Closing Time</h4>
@@ -188,15 +188,15 @@
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow opportunity_ratio">
                     <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-percent text-mauve"/>
+                        <i class="fa fa-percent text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
                             <span>
-                                <div id="total_revenue_this_year"/>
-                                <div id="total_revenue_this_quarter"/>
-                                <div id="total_revenue_this_month"/>
-                                <div id="total_revenue_this_week"/>
+                                <div id="total_revenue_this_year"></div>
+                                <div id="total_revenue_this_quarter"></div>
+                                <div id="total_revenue_this_month"></div>
+                                <div id="total_revenue_this_week"></div>
                             </span>
                         </h3>
                         <h4>Win Ratio</h4>
@@ -207,8 +207,8 @@
             <!-- Active Leads -->
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow active_leads_card">
-                    <div class="dashboard-card__icon-container bg-primary-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-bolt text-primary"/>
+                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-bolt text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
@@ -222,8 +222,8 @@
             <!-- Custom KPI 1 -->
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow custom_kpi_1">
-                    <div class="dashboard-card__icon-container bg-cyan-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-star text-cyan"/>
+                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-star text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3><span id="custom_kpi_1"></span></h3>
@@ -235,8 +235,8 @@
             <!-- Custom KPI 2 -->
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow custom_kpi_2">
-                    <div class="dashboard-card__icon-container bg-pink-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-star-half-alt text-pink"/>
+                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-star-half-alt text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3><span id="custom_kpi_2"></span></h3>
@@ -248,8 +248,8 @@
             <!-- Custom KPI 3 -->
             <div class="col-sm-6 col-md-2">
                 <div class="dashboard-card card-shadow custom_kpi_3">
-                    <div class="dashboard-card__icon-container bg-red-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-star-of-life text-red"/>
+                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-star-of-life text-mauve"></i>
                     </div>
                     <div class="dashboard-card__details">
                         <h3><span id="custom_kpi_3"></span></h3>
@@ -258,7 +258,8 @@
                 </div>
             </div>
         </div>
-        <t t-if="false">
+
+        <!-- <t t-if="false"> -->
             <div class="row mt-5">
                 <div class="col-sm-12 col-md-4">
                     <!-- Atas: Bar Chart -->
@@ -389,7 +390,7 @@
                     </div>
                 </div>
             </div>
-        </t>
+        <!-- </t> -->
         </section>
     </t>
     <!-- Admin CRM Section -->
