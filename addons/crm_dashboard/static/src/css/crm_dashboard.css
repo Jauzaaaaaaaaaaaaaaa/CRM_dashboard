@@ -16,3 +16,23 @@
 .o_crm_dashboard .o_dashboard_graph {
     padding: 12px;
 }
+
+/* Force scroll aktif */
+html, body, .o_web_client, .o_action_manager, .o_content {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+}
+
+/* Pastikan tidak ada overlay */
+.o_loading, .o_spinner, .o_block_ui, .modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Kadang dashboard pakai posisi absolute tinggi tetap */
+.o_content {
+    position: relative !important;
+    min-height: 100vh !important;
+}

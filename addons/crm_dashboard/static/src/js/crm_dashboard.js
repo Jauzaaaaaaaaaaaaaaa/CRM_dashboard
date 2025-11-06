@@ -346,6 +346,17 @@ export class CRMDashboard extends Component {
                 this._openActiveLeadsList();
             });
         }
+
+        /** ✅ Force scroll aktif di dashboard */
+        setTimeout(() => {
+            document.querySelectorAll('body, .o_web_client, .o_action_manager, .o_content')
+                .forEach(el => {
+                    el.style.overflowY = 'auto';
+                    el.style.overflowX = 'hidden';
+                    el.style.height = 'auto';
+                });
+            console.log("✅ Scroll re-enabled by crm_dashboard");
+        }, 500);
     }
 
     _openActiveLeadsList() {
@@ -364,6 +375,7 @@ export class CRMDashboard extends Component {
         this.action.doAction(action);
     }
 
+    
 
     /**
      * Handles the revenue card action.

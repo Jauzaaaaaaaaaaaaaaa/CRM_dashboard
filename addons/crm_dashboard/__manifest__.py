@@ -36,7 +36,7 @@
             'crm_dashboard/static/src/js/lib/columnHeatmap.min.js',
             'crm_dashboard/static/src/js/lib/columnHeatmap.js',
             'crm_dashboard/static/src/xml/dashboard_templates.xml',
-            # 'crm_dashboard/static/src/css/crm_dashboard.css',
+            'crm_dashboard/static/src/css/crm_dashboard.css',
             'crm_dashboard/static/src/js/dashboard_view.js',
         ],
     },
