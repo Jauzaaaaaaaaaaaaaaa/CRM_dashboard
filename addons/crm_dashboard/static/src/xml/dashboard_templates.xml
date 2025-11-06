@@ -204,17 +204,17 @@
                 </div>
             </div>
 
-            <!-- Unassigned Leads -->
+            <!-- Active Leads -->
             <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow unassigned_leads" t-on-click="(e) => this.unassigned_leads(e)">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-user-times text-mauve"/>
+                <div class="dashboard-card card-shadow active_leads_card">
+                    <div class="dashboard-card__icon-container bg-primary-light d-flex justify-content-center align-items-center">
+                        <i class="fa fa-bolt text-primary"/>
                     </div>
                     <div class="dashboard-card__details">
                         <h3>
-                            <span><t t-esc="get_count_unassigned"/></span>
+                            <span id="active_leads">0</span>
                         </h3>
-                        <h4>Unassigned Leads Count</h4>
+                        <h4>Active Leads</h4>
                     </div>
                 </div>
             </div>

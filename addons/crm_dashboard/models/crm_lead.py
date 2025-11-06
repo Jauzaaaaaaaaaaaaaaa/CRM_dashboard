@@ -53,7 +53,31 @@ class CRMLead(models.Model):
             return True
         else:
             return False
+        
+    @api.model
+    def get_active_leads(self, start_date=None, end_date=None):
+        """
+        Hitung jumlah Active Leads:
+        - active=True
+        - belum Won dan belum Lost
+        - jika start_date & end_date dikirim, filter berdasarkan create_date
+        """
+        domain = [
+            ('active', '=', True),
+            ('stage_id.is_won', '=', False),
+            ('stage_id.fold', '=', False),
+        ]
 
+        # Jika ada filter tanggal, tambahkan ke domain
+        if start_date and end_date:
+            domain += [
+                ('create_date', '>=', start_date),
+                ('create_date', '<=', end_date),
+            ]
+
+        count_active = self.env['crm.lead'].search_count(domain)
+        return {'active_leads': count_active}
+    
     @api.model
     def get_lead_stage_data(self, kwargs = None):
         """funnel chart with Lost included"""

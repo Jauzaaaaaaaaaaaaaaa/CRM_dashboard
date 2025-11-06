@@ -1,176 +1,237 @@
 /** @odoo-module */
-import { registry} from '@web/core/registry';
+import { registry } from '@web/core/registry';
 import { useService } from "@web/core/utils/hooks";
-const { Component, onWillStart, onMounted} = owl
+const { Component, onWillStart, onMounted } = owl;
 import { jsonrpc } from "@web/core/network/rpc_service";
 import { _t } from "@web/core/l10n/translation";
 import { session } from "@web/session";
 import { WebClient } from "@web/webclient/webclient";
+
 export class CRMDashboard extends Component {
-    /**
-     * Sets up the CRM Dashboard component.
-     * Initializes required services and lifecycle hooks.
-     */
+
     setup() {
         this.action = useService("action");
         this.orm = useService("orm");
+
+        // Pastikan event handler tetap ter-bind
+        this.on_change_income_expense_values = this.on_change_income_expense_values.bind(this);
+
         onWillStart(this.onWillStart);
         onMounted(this.onMounted);
     }
-    /**
-     * Function triggered before the component starts.
-     * Perform necessary setup or operations here.
-     */
+
     async onWillStart() {
         var self = this;
         this.login_employee = {};
+
         var def0 = jsonrpc('/web/dataset/call_kw/crm.lead/check_user_group', {
             model: 'crm.lead',
             method: 'check_user_group',
             args: [{}],
             kwargs: {},
         }).then(function(result) {
-            if (result == true) {
-                self.is_manager = true;
-            } else {
-                self.is_manager = false;
-            }
+            self.is_manager = !!result;
         });
+
         var def1 = jsonrpc('/web/dataset/call_kw/crm.lead/get_upcoming_events', {
-                model: "crm.lead",
-                method: "get_upcoming_events",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.upcoming_events = res['event'];
-                self.current_lang = res['cur_lang'];
-            });
+            model: "crm.lead",
+            method: "get_upcoming_events",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.upcoming_events = res['event'];
+            self.current_lang = res['cur_lang'];
+        });
+
         var def2 = jsonrpc('/web/dataset/call_kw/crm.lead/get_top_deals', {
-                model: "crm.lead",
-                method: "get_top_deals",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_deals = res['deals'];
-            });
+            model: "crm.lead",
+            method: "get_top_deals",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_deals = res['deals'];
+        });
+
         var def3 = jsonrpc('/web/dataset/call_kw/crm.lead/get_monthly_goal', {
-                model: "crm.lead",
-                method: "get_monthly_goal",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.monthly_goals = res['goals'];
-            });
+            model: "crm.lead",
+            method: "get_monthly_goal",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.monthly_goals = res['goals'];
+        });
+
         var def4 = jsonrpc('/web/dataset/call_kw/crm.lead/get_top_sp_revenue', {
-                model: "crm.lead",
-                method: "get_top_sp_revenue",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_sp_revenue = res['top_revenue'];
-            });
+            model: "crm.lead",
+            method: "get_top_sp_revenue",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_sp_revenue = res['top_revenue'];
+        });
+
         var def5 = jsonrpc('/web/dataset/call_kw/crm.lead/get_country_revenue', {
-                model: "crm.lead",
-                method: "get_country_revenue",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_country_revenue = res['country_revenue'];
-            });
+            model: "crm.lead",
+            method: "get_country_revenue",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_country_revenue = res['country_revenue'];
+        });
+
         var def6 = jsonrpc('/web/dataset/call_kw/crm.lead/get_country_count', {
-                model: "crm.lead",
-                method: "get_country_count",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_country_count = res['country_count'];
-            });
+            model: "crm.lead",
+            method: "get_country_count",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_country_count = res['country_count'];
+        });
+
         var def8 = jsonrpc('/web/dataset/call_kw/crm.lead/get_ratio_based_country', {
-                model: "crm.lead",
-                method: "get_ratio_based_country",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_country_wise_ratio = res['country_wise_ratio'];
-            });
+            model: "crm.lead",
+            method: "get_ratio_based_country",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_country_wise_ratio = res['country_wise_ratio'];
+        });
+
         var def9 = jsonrpc('/web/dataset/call_kw/crm.lead/get_ratio_based_sp', {
-                model: "crm.lead",
-                method: "get_ratio_based_sp",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_salesperson_wise_ratio = res['salesperson_wise_ratio'];
-            });
+            model: "crm.lead",
+            method: "get_ratio_based_sp",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_salesperson_wise_ratio = res['salesperson_wise_ratio'];
+        });
+
         var def10 = jsonrpc('/web/dataset/call_kw/crm.lead/get_ratio_based_sales_team', {
-                model: "crm.lead",
-                method: "get_ratio_based_sales_team",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_sales_team_wise_ratio = res['sales_team_wise_ratio'];
-            });
+            model: "crm.lead",
+            method: "get_ratio_based_sales_team",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_sales_team_wise_ratio = res['sales_team_wise_ratio'];
+        });
+
         var def11 = jsonrpc('/web/dataset/call_kw/crm.lead/get_recent_activities', {
-                model: "crm.lead",
-                method: "get_recent_activities",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.recent_activities = res['activities'];
-            });
+            model: "crm.lead",
+            method: "get_recent_activities",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.recent_activities = res['activities'];
+        });
+
         var def12 = jsonrpc('/web/dataset/call_kw/crm.lead/get_count_unassigned', {
-                model: "crm.lead",
-                method: "get_count_unassigned",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.get_count_unassigned = res['count_unassigned'];
-            });
+            model: "crm.lead",
+            method: "get_count_unassigned",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.get_count_unassigned = res['count_unassigned'];
+        });
+
         var def13 = jsonrpc('/web/dataset/call_kw/crm.lead/get_top_sp_by_invoice', {
-                model: "crm.lead",
-                method: "get_top_sp_by_invoice",
-                args: [{}],
-                kwargs: {},
-            })
-            .then(function(res) {
-                self.top_sp_by_invoice = res['sales_person_invoice'];
-            });
-        return $.when(def0, def1, def2, def3, def4, def5, def6, def8, def9, def10, def11, def12, def13);
+            model: "crm.lead",
+            method: "get_top_sp_by_invoice",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.top_sp_by_invoice = res['sales_person_invoice'];
+        });
+
+        var def14 = jsonrpc('/web/dataset/call_kw/crm.lead/get_active_leads', {
+            model: "crm.lead",
+            method: "get_active_leads",
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            self.active_leads_count = parseInt(res?.active_leads || 0, 10);
+        }).catch(function(err) {
+            console.error('Failed to load Active Leads:', err);
+            self.active_leads_count = 0;
+        });
+
+        return $.when(def0, def1, def2, def3, def4, def5, def6,
+                      def8, def9, def10, def11, def12, def13, def14);
     }
+
     /**
-     * Handles the change event for income and expense values.
-     * @param {Event} e - The event object.
+     * Hitung tanggal start & end sesuai periode
      */
+    _getDateRange(period) {
+        const now = new Date();
+        let start, end;
+
+        if (period === "this_week") {
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            start = new Date(now.setDate(diff));
+            end = new Date();
+        } else if (period === "this_month") {
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        } else if (period === "this_quarter") {
+            const q = Math.floor(now.getMonth() / 3);
+            start = new Date(now.getFullYear(), q * 3, 1);
+            end = new Date(now.getFullYear(), q * 3 + 3, 0);
+        } else if (period === "this_year") {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date(now.getFullYear(), 11, 31);
+        } else {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date();
+        }
+
+        return {
+            start: start.toISOString().split('T')[0],
+            end: end.toISOString().split('T')[0],
+        };
+    }
+
+    /**
+     * Refresh Active Leads — bisa untuk periode tertentu
+     */
+    async refreshActiveLeads(period = null) {
+        try {
+            let args = [];
+            if (period) {
+                const { start, end } = this._getDateRange(period);
+                args = [start, end];
+            }
+
+            const res = await jsonrpc('/web/dataset/call_kw/crm.lead/get_active_leads', {
+                model: 'crm.lead',
+                method: 'get_active_leads',
+                args: args,
+                kwargs: {},
+            });
+
+            const count = res && res.active_leads ? parseInt(res.active_leads, 10) : 0;
+            const el = document.querySelector('#active_leads');
+            if (el) el.innerHTML = count;
+        } catch (err) {
+            console.error('Failed to refresh Active Leads:', err);
+        }
+    }
+
     on_change_income_expense_values(e) {
         e.stopPropagation();
         var $target = $(e.target);
         var value = $target.val();
-        if (value == "this_year") {
-            this.onclick_this_year($target.val());
-        } else if (value == "this_quarter") {
-            this.onclick_this_quarter($target.val());
-        } else if (value == "this_month") {
-            this.onclick_this_month($target.val());
-        } else if (value == "this_week") {
-            this.onclick_this_week($target.val());
+        if (value === "this_year") {
+            this.onclick_this_year();
+        } else if (value === "this_quarter") {
+            this.onclick_this_quarter();
+        } else if (value === "this_month") {
+            this.onclick_this_month();
+        } else if (value === "this_week") {
+            this.onclick_this_week();
         }
     }
-    /**
-     * Handles the click event for the 'this_week' option.
-     * Calls a JSON-RPC method to retrieve data for the current week.
-     * Updates the UI to display the relevant information.
-     * @param {Event} ev - The event object.
-     */
+
     onclick_this_week(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_week', {
@@ -178,34 +239,25 @@ export class CRMDashboard extends Component {
             method: 'crm_week',
             args: [{}],
             kwargs: {},
-        })
-        .then(function(result) {
-            // Hide others
+        }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
             $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
             $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
 
-            // Show week
-            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').show()
-                .empty();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').show().empty();
 
-            // Fill data
             $('#leads_this_week').append('<span>' + result.record + '</span>');
             $('#opp_this_week').append('<span>' + result.record_op + '</span>');
             $('#exp_rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
             $('#rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_week').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#ratio_this_week').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
             $('#avg_time_this_week').append('<span>' + result.avg_time + '&nbspsec</span>');
-            $('#total_revenue_this_week').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+            $('#total_revenue_this_week').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            self.refreshActiveLeads("this_week");
         });
     }
 
-    /**
-     * Handles the click event for the 'this_month' option.
-     * Calls a JSON-RPC method to retrieve data for the current month.
-     * Updates the UI to display the relevant information.
-     * @param {Event} ev - The event object.
-     */
     onclick_this_month(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_month', {
@@ -213,34 +265,25 @@ export class CRMDashboard extends Component {
             method: 'crm_month',
             args: [{}],
             kwargs: {},
-        })
-        .then(function(result) {
-            // Hide others
+        }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
             $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
             $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
 
-            // Show month
-            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').show()
-                .empty();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').show().empty();
 
-            // Fill data
             $('#leads_this_month').append('<span>' + result.record + '</span>');
             $('#opp_this_month').append('<span>' + result.record_op + '</span>');
             $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
             $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_month').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#ratio_this_month').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
             $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec</span>');
-            $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+            $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            self.refreshActiveLeads("this_month");
         });
     }
 
-    /**
-     * Handles the click event for the 'this_quarter' option.
-     * Calls a JSON-RPC method to retrieve data for the current quarter.
-     * Updates the UI to display the relevant information.
-     * @param {Event} ev - The event object.
-     */
     onclick_this_quarter(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_quarter', {
@@ -248,34 +291,25 @@ export class CRMDashboard extends Component {
             method: 'crm_quarter',
             args: [{}],
             kwargs: {},
-        })
-        .then(function(result) {
-            // Hide others
+        }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
             $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
             $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
 
-            // Show quarter
-            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').show()
-                .empty();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').show().empty();
 
-            // Fill data
             $('#leads_this_quarter').append('<span>' + result.record + '</span>');
             $('#opp_this_quarter').append('<span>' + result.record_op + '</span>');
             $('#exp_rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
             $('#rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_quarter').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#ratio_this_quarter').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
             $('#avg_time_this_quarter').append('<span>' + result.avg_time + '&nbspsec</span>');
-            $('#total_revenue_this_quarter').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+            $('#total_revenue_this_quarter').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            self.refreshActiveLeads("this_quarter");
         });
     }
 
-    /**
-     * Handles the click event for the 'this_year' option.
-     * Calls a JSON-RPC method to retrieve data for the current year.
-     * Updates the UI to display the relevant information.
-     * @param {Event} ev - The event object.
-     */
     onclick_this_year(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
@@ -283,27 +317,53 @@ export class CRMDashboard extends Component {
             method: 'crm_year',
             args: [{}],
             kwargs: {},
-        })
-        .then(function(result) {
-            // Hide others
+        }).then(function(result) {
             $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
             $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
             $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
 
-            // Show year
-            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').show()
-                .empty();
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').show().empty();
 
-            // Fill data
             $('#leads_this_year').append('<span>' + result.record + '</span>');
             $('#opp_this_year').append('<span>' + result.record_op + '</span>');
             $('#exp_rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
             $('#rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_year').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>'); // 🔹 Lost Ratio
+            $('#ratio_this_year').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
             $('#avg_time_this_year').append('<span>' + result.avg_time + '&nbspsec</span>');
-            $('#total_revenue_this_year').append('<span>' + result.opportunity_ratio_value + '%</span>'); // Win Ratio
+            $('#total_revenue_this_year').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            self.refreshActiveLeads("this_year");
         });
     }
+
+    onMounted() {
+        const el = document.querySelector('#active_leads');
+        if (el) el.innerHTML = (this.active_leads_count || 0).toString();
+        const card = document.querySelector('.active_leads_card');
+        if (card) {
+            card.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                this._openActiveLeadsList();
+            });
+        }
+    }
+
+    _openActiveLeadsList() {
+        const action = {
+            type: 'ir.actions.act_window',
+            name: 'Active Leads',
+            res_model: 'crm.lead',
+            view_mode: 'tree,form',
+            target: 'current',
+            domain: [
+                ['active', '=', true],
+                ['stage_id.is_won', '=', false],
+                ['stage_id.fold', '=', false],
+            ],
+        };
+        this.action.doAction(action);
+    }
+
 
     /**
      * Handles the revenue card action.
@@ -1445,3 +1505,4 @@ funnel_chart() {
 }
 CRMDashboard.template = "CRMdashboard"
 registry.category("actions").add("crm_dashboard", CRMDashboard)
+
