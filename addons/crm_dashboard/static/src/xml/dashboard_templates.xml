@@ -53,216 +53,215 @@
             </div>
         </section>
     </t>
-<!-- Manager CRM Section -->
-<t t-name="Managercrm">
-    <section class="dashboard_main_section" id="main_section_manager">
-        <div class="crm_dash_cards row">
-            <!-- 1. Team Opportunities -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow opportunity" t-on-click="(e) => this.opportunity(e)">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-trophy text-mauve"></i>
+    <!-- Manager CRM Section -->
+    <t t-name="Managercrm">
+        <section class="dashboard_main_section" id="main_section_manager">
+            <div class="crm_dash_cards row">
+                <!-- 1. Team Opportunities -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow opportunity" t-on-click="(e) => this.opportunity(e)">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-trophy text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="opp_this_year"></div>
+                                    <div id="opp_this_quarter"></div>
+                                    <div id="opp_this_month"></div>
+                                    <div id="opp_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Team Opportunities</h4>
+                        </div>
                     </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="opp_this_year"></div>
-                                <div id="opp_this_quarter"></div>
-                                <div id="opp_this_month"></div>
-                                <div id="opp_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Team Opportunities</h4>
+                </div>
+
+                <!-- 2. Win Ratio -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow opportunity_ratio">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-percent text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="total_revenue_this_year"></div>
+                                    <div id="total_revenue_this_quarter"></div>
+                                    <div id="total_revenue_this_month"></div>
+                                    <div id="total_revenue_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Win Ratio</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Lost Ratio -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow lost_ratio">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-percent text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="ratio_this_year"></div>
+                                    <div id="ratio_this_quarter"></div>
+                                    <div id="ratio_this_month"></div>
+                                    <div id="ratio_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Lost Ratio</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Total Revenue -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow revenue_card w-100" t-on-click="(e) => this.revenue_card(e)">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-usd text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="rev_this_year"></div>
+                                    <div id="rev_this_quarter"></div>
+                                    <div id="rev_this_month"></div>
+                                    <div id="rev_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Total Revenue</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Team Leads -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow my_lead" t-on-click="(e) => this.my_lead(e)">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-line-chart text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="leads_this_year"></div>
+                                    <div id="leads_this_quarter"></div>
+                                    <div id="leads_this_month"></div>
+                                    <div id="leads_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Team Leads</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Active Leads -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow active_leads_card">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-bolt text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span id="active_leads">0</span>
+                            </h3>
+                            <h4>Active Leads</h4>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Win Ratio -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow opportunity_ratio">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-percent text-mauve"></i>
+            <!-- ===== ROW 2 ===== -->
+            <div class="row mt-3">
+
+                <!-- 7. Follow Up Do -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow custom_kpi_followup">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-tasks text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="custom_kpi_followup"></span></h3>
+                            <h4>Follow Up Do</h4>
+                        </div>
                     </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="total_revenue_this_year"></div>
-                                <div id="total_revenue_this_quarter"></div>
-                                <div id="total_revenue_this_month"></div>
-                                <div id="total_revenue_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Win Ratio</h4>
+                </div>
+
+                <!-- 8. Average Closing Time -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow avg_close_time">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-clock-o text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="avg_time_this_year"></div>
+                                    <div id="avg_time_this_quarter"></div>
+                                    <div id="avg_time_this_month"></div>
+                                    <div id="avg_time_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Average Closing Time</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. Emails Sent -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow custom_kpi_email">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-envelope text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="custom_kpi_email"></span></h3>
+                            <h4>Emails Sent</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. Teams Meeting -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow custom_kpi_meeting">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-users text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="custom_kpi_meeting"></span></h3>
+                            <h4>Teams Meeting</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 11. Teams Calls -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow custom_kpi_calls">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-phone text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="custom_kpi_calls"></span></h3>
+                            <h4>Teams Calls</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. Top Sales Person -->
+                <div class="col-sm-6 col-md-2">
+                    <div class="dashboard-card card-shadow custom_kpi_top_sales">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-user-tie text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="custom_kpi_top_sales"></span></h3>
+                            <h4>Top Sales Person</h4>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. Lost Ratio -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow lost_ratio">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-percent text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="ratio_this_year"></div>
-                                <div id="ratio_this_quarter"></div>
-                                <div id="ratio_this_month"></div>
-                                <div id="ratio_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Lost Ratio</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Total Revenue -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow revenue_card w-100" t-on-click="(e) => this.revenue_card(e)">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-usd text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="rev_this_year"></div>
-                                <div id="rev_this_quarter"></div>
-                                <div id="rev_this_month"></div>
-                                <div id="rev_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Total Revenue</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. Team Leads -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow my_lead" t-on-click="(e) => this.my_lead(e)">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-line-chart text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="leads_this_year"></div>
-                                <div id="leads_this_quarter"></div>
-                                <div id="leads_this_month"></div>
-                                <div id="leads_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Team Leads</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. Active Leads -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow active_leads_card">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-bolt text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span id="active_leads">0</span>
-                        </h3>
-                        <h4>Active Leads</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== ROW 2 ===== -->
-        <div class="row mt-3">
-
-            <!-- 7. Follow Up Do -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow custom_kpi_followup">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-tasks text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3><span id="custom_kpi_followup"></span></h3>
-                        <h4>Follow Up Do</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 8. Average Closing Time -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow avg_close_time">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-clock-o text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3>
-                            <span>
-                                <div id="avg_time_this_year"></div>
-                                <div id="avg_time_this_quarter"></div>
-                                <div id="avg_time_this_month"></div>
-                                <div id="avg_time_this_week"></div>
-                            </span>
-                        </h3>
-                        <h4>Average Closing Time</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 9. Emails Sent -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow custom_kpi_email">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-envelope text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3><span id="custom_kpi_email"></span></h3>
-                        <h4>Emails Sent</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 10. Teams Meeting -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow custom_kpi_meeting">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-users text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3><span id="custom_kpi_meeting"></span></h3>
-                        <h4>Teams Meeting</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 11. Teams Calls -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow custom_kpi_calls">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-phone text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3><span id="custom_kpi_calls"></span></h3>
-                        <h4>Teams Calls</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 12. Top Sales Person -->
-            <div class="col-sm-6 col-md-2">
-                <div class="dashboard-card card-shadow custom_kpi_top_sales">
-                    <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                        <i class="fa fa-user-tie text-mauve"></i>
-                    </div>
-                    <div class="dashboard-card__details">
-                        <h3><span id="custom_kpi_top_sales"></span></h3>
-                        <h4>Top Sales Person</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- <t t-if="false"> -->
             <div class="row mt-5">
                 <div class="col-sm-12 col-md-4">
                     <!-- Atas: Bar Chart -->
@@ -289,7 +288,7 @@
                         <h2>Year to Date</h2>
                         <hr/>
                         <div class="graph_canvas"
-                             style="margin-top: 30px;">
+                                style="margin-top: 30px;">
                             <canvas class="annual_target" width="340px"
                                     height="400px"/>
                         </div>
@@ -333,75 +332,73 @@
                     </div>
                 </div> -->
             </div>
-            <!-- <div class="row mt-5">
-                <div class="upcoming_activities_div col-12 col-sm-12 col-md-6">
-                    <div class="chart-container card-shadow">
-                        <h3 class="h5">Upcoming Activities</h3>
-                        <hr/>
-                        <div class="crm_scroll_table" style="max-height:530px;">
-                            <div class="items-table">
-                                <div class="item-container">
-                                    <t t-foreach="upcoming_events"
-                                       t-as="activity" t-key="activity">
-                                        <div class="item-header">
-                                            <div class="count-container">
-                                                <t t-esc="activity[1]"/>
-                                            </div>
-                                            <div class="item-title pl-3">
-                                                <div class="item-content">
-                                                    <ul>
-                                                        <li>
-                                                            <t t-set="lang_cu"
-                                                               t-value="current_lang"/>
-                                                            <t t-if="lang_cu in activity[4]">
-                                                                Activity:
-                                                                <span style="font-size: 16px;color: #4c4c4c;">
-                                                                    <t t-esc="activity[4][lang_cu]"/>
+                <!-- <div class="row mt-5">
+                    <div class="upcoming_activities_div col-12 col-sm-12 col-md-6">
+                        <div class="chart-container card-shadow">
+                            <h3 class="h5">Upcoming Activities</h3>
+                            <hr/>
+                            <div class="crm_scroll_table" style="max-height:530px;">
+                                <div class="items-table">
+                                    <div class="item-container">
+                                        <t t-foreach="upcoming_events"
+                                            t-as="activity" t-key="activity">
+                                            <div class="item-header">
+                                                <div class="count-container">
+                                                    <t t-esc="activity[1]"/>
+                                                </div>
+                                                <div class="item-title pl-3">
+                                                    <div class="item-content">
+                                                        <ul>
+                                                            <li>
+                                                                <t t-set="lang_cu"
+                                                                    t-value="current_lang"/>
+                                                                <t t-if="lang_cu in activity[4]">
+                                                                    Activity:
+                                                                    <span style="font-size: 16px;color: #4c4c4c;">
+                                                                        <t t-esc="activity[4][lang_cu]"/>
+                                                                    </span>
+                                                                </t>
+                                                            </li>
+                                                            <li>
+                                                                Name:
+                                                                <span style="font-size: 15px;color: #4c4c4c;">
+                                                                    <t t-esc="activity[3]"/>
                                                                 </span>
-                                                            </t>
-                                                        </li>
-                                                        <li>
-                                                            Name:
-                                                            <span style="font-size: 15px;color: #4c4c4c;">
-                                                                <t t-esc="activity[3]"/>
-                                                            </span>
-                                                        </li>
-                                                        <li t-if="activity[2]">
-                                                            Summary:
-                                                            <span style="font-size: 13px;color: #4c4c4c;">
-                                                                <t t-esc="activity[2]"/>
-                                                            </span>
-                                                        </li>
-                                                    </ul>
+                                                            </li>
+                                                            <li t-if="activity[2]">
+                                                                Summary:
+                                                                <span style="font-size: 13px;color: #4c4c4c;">
+                                                                    <t t-esc="activity[2]"/>
+                                                                </span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </t>
+                                        </t>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="revenue_count_pie_div col-12 col-sm-12 col-md-6">
-                    <div class="chart-container card-shadow">
-                        <h3 class="h5">Total Revenue by Salesperson</h3>
-                        <br/>
-                        <div class="graph_canvas">
-                            <canvas class="revenue_count_pie_canvas"
-                                    width="200" height="120"/>
+                    <div class="revenue_count_pie_div col-12 col-sm-12 col-md-6">
+                        <div class="chart-container card-shadow">
+                            <h3 class="h5">Total Revenue by Salesperson</h3>
+                            <br/>
+                            <div class="graph_canvas">
+                                <canvas class="revenue_count_pie_canvas"
+                                        width="200" height="120"/>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div> -->
-        <!-- </t> -->
+                </div> -->
         </section>
     </t>
     <!-- Admin CRM Section -->
     <t t-name="Admincrm">
         <section class="dashboard_main_section" id="main_section_admin">
-        <!-- <t t-if= "false"> -->
             <div class="row mt-5">
-                <div class="col-sm-12 col-md-4">
+                <!-- <div class="col-sm-12 col-md-4">
                     <div class="top_deals_div chart-container card-shadow">
                         <h2>Top Deals</h2>
                         <hr/>
@@ -435,65 +432,25 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
+                
                 <div class="col-12 col-sm-12 col-md-4">
-                    <div class="monthly_goal_div half_chart chart-container card-shadow">
-                        <h3 class="h5">Monthly Goal</h3>
-                        <hr/>
-                        <input type="hidden" id="percentage_crm"
-                               name="percentage_crm"
-                               t-att-value="monthly_goals[3]"/>
-                        <div class="gauge gauge--liveupdate" id="gauge"
-                             style="padding-top: 50px;">
-                            <div class="gauge__container">
-                                <div class="gauge__background"/>
-                                <div class="gauge__center"/>
-                                <div class="gauge__data"/>
-                                <div class="gauge__needle"/>
-                            </div>
-                            <div class="gauge__labels mdl-typography__headline">
-                                <span class="gauge__label--low">
-                                    <b>
-                                        <t t-esc="monthly_goals[2]"/>
-                                        <t t-esc="monthly_goals[0]"/>
-                                    </b>
-                                </span>
-                                <span class="gauge__label--spacer"/>
-                                <span class="gauge__label--high">
-                                    <b>
-                                        <t t-esc="monthly_goals[2]"/>
-                                        <t t-esc="monthly_goals[1]"/>
-                                    </b>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="leads_campaign_pie_div half_chart chart-container card-shadow">
-                        <h3 class="h5">Leads group by Campaign</h3>
-                        <hr/>
-                        <div class="graph_canvas">
-                            <canvas class="campaign_source" width="200"
-                                    height="120"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-12 col-md-4">
-                    <div class="leads_medium_pie_div half_chart chart-container card-shadow">
+                    <!-- <div class="leads_medium_pie_div half_chart chart-container card-shadow">
                         <h3 class="h5">Leads group by Medium</h3>
                         <hr/>
                         <div class="graph_canvas">
                             <canvas class="medium_leads" width="200"
                                     height="120"/>
                         </div>
-                    </div>
-                    <div class="leads_source_pie_div half_chart chart-container card-shadow">
+                    </div> -->
+                    <!-- <div class="leads_source_pie_div half_chart chart-container card-shadow">
                         <h3 class="h5">Leads group by Source</h3>
                         <hr/>
                         <div class="graph_canvas">
                             <canvas class="source_lead" width="200"
                                     height="120"/>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div class="row mt-5">
@@ -526,7 +483,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="top_country_revenue_div col-12 col-sm-12 col-md-4">
+                <!-- <div class="top_country_revenue_div col-12 col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h3 class="h5">Top Country Wise Revenue</h3>
                         <hr/>
@@ -554,8 +511,8 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="top_country_count_div col-12 col-sm-12 col-md-4">
+                </div> -->
+                <!-- <div class="top_country_count_div col-12 col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h3 class="h5">Top Country Wise Count</h3>
                         <hr/>
@@ -582,10 +539,10 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="row mt-5">
-                <div class="recent_activity_div col-12 col-sm-12 col-md-4">
+                <!-- <div class="recent_activity_div col-12 col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h3 class="h5">Recent Activities</h3>
                         <hr/>
@@ -636,8 +593,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="lost_opp_lead_graph_div col-12 col-sm-12 col-md-4">
+                </div> -->
+                <!-- <div class="lost_opp_lead_graph_div col-12 col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h3 class="h5">Lost Opportunity/Lead Graph</h3>
                         <hr/>
@@ -668,7 +625,7 @@
                                     height="400"/>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <t t-if="top_sp_by_invoice.length">
                     <div class="top_sp_invoice_div col-12 col-sm-12 col-md-4">
                         <div class="chart-container card-shadow">
@@ -705,7 +662,6 @@
                     </div>
                 </t>
             </div>
-            <!-- </t> -->
         </section>
     </t>
 </templates>
