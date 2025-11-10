@@ -263,17 +263,38 @@
             </div>
 
             <div class="row mt-5">
-                <div class="col-sm-12 col-md-4">
+                <div class="col-sm-12 col-md-6">
                     <!-- Atas: Bar Chart -->
-                    <div class="bar_chart_div half_chart chart-container card-shadow">
+                    <div class="bar_chart_div half_chart chart-container card-shadow" style="height:440px;">
                         <h2>Opportunities by Stage</h2>
                         <hr/>
-                        <div class="graph_canvas">
-                            <div id="container" style="height:220px; width:100%;"></div>
+                        <div class="graph_canvas" style="height:370px;">
+                            <div id="container" style="height:100%; width:100%;"></div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Bawah: Pie Chart Won vs Lost -->
+                <!-- Kanan: Priority Distribution -->
+                <div class="col-sm-12 col-md-6">
+                    <div class="priority_pie_div half_chart chart-container card-shadow" style="height:440px;">
+                        <h2>Priority Distribution</h2>
+                        <hr/>
+                        <div class="graph_canvas d-flex justify-content-center align-items-center" style="height:370px;">
+                            <canvas id="priority_pie"
+                                style="
+                                    width: 100% !important;
+                                    height: 100% !important;
+                                    max-width: 310px;
+                                    max-height: 310px;
+                                    aspect-ratio: 1 / 1;
+                                    transform: scale(1.05);
+                                ">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bawah (masih lanjut di row yang sama) -->
                     <div class="won_lost_pie_div half_chart chart-container card-shadow">
                         <h2>Won vs Lost</h2>
                         <hr/>
@@ -281,8 +302,6 @@
                             <div id="won_lost_pie" style="height:220px; width:100%;"></div>
                         </div>
                     </div>
-
-                </div>
                 <!-- <div class="year_to_date_graph_div col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h2>Year to Date</h2>

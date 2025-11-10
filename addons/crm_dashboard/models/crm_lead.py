@@ -441,6 +441,36 @@ class CRMLead(models.Model):
         return test
 
     @api.model
+    def get_priority_distribution(self, kwargs=None):
+        """Get count and percentage of each priority level (low, middle, high)."""
+        priorities = ['low', 'middle', 'high']
+        counts = {}
+
+        # Hitung jumlah masing-masing priority
+        for level in priorities:
+            count = self.search_count([('priority_level', '=', level)])
+            counts[level] = count
+
+        total = sum(counts.values())
+        percentages = {
+            level: round((counts[level] / total * 100), 2) if total else 0
+            for level in priorities
+        }
+
+        # Debug ke log Odoo
+        print("=== PRIORITY DATA DEBUG ===")
+        print("Counts:", counts)
+        print("Percentages:", percentages)
+        print("===========================")
+
+        return {
+            'counts': counts,
+            'percentages': percentages,
+            'total': total,
+        }
+
+
+    @api.model
     def get_ratio_based_country(self, kwargs):
         """Top 5 Won vs Lost Ratio based on Country"""
         self._cr.execute('''SELECT (SELECT name FROM res_country WHERE id=country_id),

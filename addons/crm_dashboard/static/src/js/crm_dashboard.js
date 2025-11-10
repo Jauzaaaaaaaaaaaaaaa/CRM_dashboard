@@ -536,7 +536,78 @@ export class CRMDashboard extends Component {
         this.render_source_leads_graph();
         this.onclick_lost_last_12months();
         this.render_lost_leads_by_stage_graph();
+        this.render_priority_pie_chart();
     }
+    /**
+     * Render Priority Distribution Pie Chart
+     */
+    render_priority_pie_chart() {
+        const ctx = document.getElementById("priority_pie");
+        if (!ctx) {
+            console.warn("Priority pie chart canvas not found");
+            return;
+        }
+
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_priority_distribution', {
+            model: 'crm.lead',
+            method: 'get_priority_distribution',
+            args: [{}],
+            kwargs: {},
+        }).then(function(res) {
+            console.log("Priority Data from Odoo:", res);
+
+            // Handle jika response berupa list
+            if (Array.isArray(res)) {
+                res = res[0];
+            }
+
+            const counts = (res && res.counts) ? res.counts : {};
+            const low = counts.low || 0;
+            const middle = counts.middle || 0;
+            const high = counts.high || 0;
+
+            const data = [low, middle, high];
+            const labels = ['Low', 'Middle', 'High'];
+
+            // Kalau semua 0, tampilkan dummy
+            const total = data.reduce((a, b) => a + b, 0);
+            if (total === 0) {
+                data[1] = 1; // tampilkan satu bagian middle biar chart tetap muncul
+            }
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'], // green, yellow, red
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = data.reduce((a, b) => a + b, 0);
+                                    const percentage = total ? ((value / total) * 100).toFixed(2) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }).catch(err => console.error("Error fetching priority data:", err));
+    }
+
+
     /**
      * Renders a doughnut chart to display lost leads categorized by stage.
      * Fetches data via JSON-RPC and generates a chart using Chart.js.
