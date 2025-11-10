@@ -237,7 +237,7 @@ export class CRMDashboard extends Component {
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_week', {
             model: 'crm.lead',
             method: 'crm_week',
-            args: [{}],
+            args: [{  by_all: true  }],
             kwargs: {},
         }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
@@ -263,7 +263,7 @@ export class CRMDashboard extends Component {
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_month', {
             model: 'crm.lead',
             method: 'crm_month',
-            args: [{}],
+            args: [{  by_all: true  }],
             kwargs: {},
         }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
@@ -289,7 +289,7 @@ export class CRMDashboard extends Component {
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_quarter', {
             model: 'crm.lead',
             method: 'crm_quarter',
-            args: [{}],
+            args: [{  by_all: true  }],
             kwargs: {},
         }).then(function(result) {
             $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
@@ -312,12 +312,12 @@ export class CRMDashboard extends Component {
 
     onclick_this_year(ev) {
         var self = this;
-        jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
-            model: 'crm.lead',
-            method: 'crm_year',
-            args: [{}],
-            kwargs: {},
-        }).then(function(result) {
+            jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
+                model: 'crm.lead',
+                method: 'crm_year',
+                args: [{  by_all: true  }],
+                kwargs: {},
+            }).then(function (result) {
             $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
             $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
             $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();

@@ -263,8 +263,9 @@
             </div>
 
             <div class="row mt-5">
+                <!-- Kiri Atas: Opportunities by Stage -->
                 <div class="col-sm-12 col-md-6">
-                    <!-- Atas: Bar Chart -->
+                
                     <div class="bar_chart_div half_chart chart-container card-shadow" style="height:440px;">
                         <h2>Opportunities by Stage</h2>
                         <hr/>
@@ -274,7 +275,7 @@
                     </div>
                 </div>
 
-                <!-- Kanan: Priority Distribution -->
+                <!-- Kanan Atas: Priority Distribution -->
                 <div class="col-sm-12 col-md-6">
                     <div class="priority_pie_div half_chart chart-container card-shadow" style="height:440px;">
                         <h2>Priority Distribution</h2>
@@ -294,14 +295,29 @@
                     </div>
                 </div>
 
-                <!-- Bawah (masih lanjut di row yang sama) -->
-                    <div class="won_lost_pie_div half_chart chart-container card-shadow">
-                        <h2>Won vs Lost</h2>
+                <!-- Kiri Bawah: Custom Card -->
+                <div class="col-sm-12 col-md-6 mt-4">
+                    <div class="chart-container card-shadow half_chart p-4" style="height:440px;">
+                        <h2>Custom Card</h2>
                         <hr/>
-                        <div class="graph_canvas">
-                            <div id="won_lost_pie" style="height:220px; width:100%;"></div>
+                        <div class="graph_canvas d-flex justify-content-center align-items-center" style="height:370px;">
+                            <p style="font-size:16px; color:#555; text-align:center; opacity:0.7;">
+                                Tambahkan informasi tambahan atau insight di sini.
+                            </p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Kanan Bawah: Won vs Lost -->
+                <div class="col-sm-12 col-md-6 mt-4">
+                    <div class="won_lost_pie_div half_chart chart-container card-shadow" style="height:440px;">
+                        <h2>Won vs Lost</h2>
+                        <hr/>
+                        <div class="graph_canvas d-flex justify-content-center align-items-center" style="height:370px;">
+                            <div id="won_lost_pie" style="height:100%; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
                 <!-- <div class="year_to_date_graph_div col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h2>Year to Date</h2>
