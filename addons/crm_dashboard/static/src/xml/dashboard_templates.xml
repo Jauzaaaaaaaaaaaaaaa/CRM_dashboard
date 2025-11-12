@@ -661,37 +661,18 @@
                         </div>
                     </div>
                 </div> -->
-                <t t-if="top_sp_by_invoice.length">
-                    <div class="top_sp_invoice_div col-12 col-sm-12 col-md-4">
-                        <div class="chart-container card-shadow">
-                            <h3 class="h5">Top Sales Person by Invoice</h3>
-                            <hr/>
-                            <div class="items-table">
-                                <div class="item-container">
-                                    <t t-foreach="top_sp_by_invoice"
-                                       t-as="activity" t-key="activity">
-                                        <div class="item-header">
-                                            <div class="count-container"
-                                                 style="height: 30px;width: 30px;font-size: 1.4rem;">
-                                                <t t-esc="activity[3]"/>
-                                            </div>
-                                            <div class="item-title pl-4 row">
-                                                <h3><t t-esc="activity[0]"/>
-                                                </h3>
-                                                <div class="item-content">
-                                                    <ul>
-                                                        <li>
-                                                            <h3>
-                                                                <t t-esc="activity[2]"/>
-                                                                <t t-esc="activity[1]"/>
-                                                            </h3>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </t>
-                                </div>
+                <t t-if="top_sp_by_invoice and top_sp_by_invoice.length">
+                    <!-- 🔹 Top Salesperson by Invoice (Lebar penuh, tinggi besar, judul rata kiri) -->
+                    <div class="top_sp_invoice_div col-12">
+                        <div class="chart-container card-shadow" style="width:100%; height:600px;">
+                            <h3 class="h5 mt-2" style="text-align:left; margin-left:1rem;">Top Salesperson by Invoice</h3>
+                            <hr style="margin: 0.5rem 0;" />
+                            <div class="chart-canvas-wrapper"
+                                style="width:100%; height:520px; margin-bottom:0.75rem; display:flex; justify-content:center; align-items:center;">
+                                <canvas id="invoice_chart"
+                                        width="800"
+                                        height="520"
+                                        style="width:100%; height:100%;"></canvas>
                             </div>
                         </div>
                     </div>

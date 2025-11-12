@@ -158,6 +158,9 @@ export class CRMDashboard extends Component {
                       def8, def9, def10, def11, def12, def13, def14);
     }
 
+
+    
+
     /**
      * Hitung tanggal start & end sesuai periode
      */
@@ -537,6 +540,7 @@ export class CRMDashboard extends Component {
         this.onclick_lost_last_12months();
         this.render_lost_leads_by_stage_graph();
         this.render_priority_pie_chart();
+        this.render_invoice_chart();
     }
     /**
      * Render Priority Distribution Pie Chart
@@ -1294,6 +1298,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
+
     /**
      * Renders a doughnut chart to display sales activity data.
      * Fetches data via JSON-RPC and generates a chart using Chart.js.
@@ -1370,211 +1375,388 @@ export class CRMDashboard extends Component {
             });
         });
     }
-/**
- * Renders a bar chart to display annual target data.
- * Fetches data via JSON-RPC and generates a chart using Chart.js.
- */
-render_annual_chart_graph() {
-    const self = this;
-    const ctx = $(".annual_target");
+    /**
+     * Renders a bar chart to display annual target data.
+     * Fetches data via JSON-RPC and generates a chart using Chart.js.
+     */
+    render_annual_chart_graph() {
+        const self = this;
+        const ctx = $(".annual_target");
 
-    jsonrpc('/web/dataset/call_kw/crm.lead/get_the_annual_target', {
-        model: "crm.lead",
-        method: "get_the_annual_target",
-        args: [{}],
-        kwargs: {},
-    }).then(function (arrays) {
-        // pastikan arrays berisi data valid
-        if (!arrays || !Array.isArray(arrays[0]) || !Array.isArray(arrays[1])) {
-            console.warn("⚠️ Data annual target tidak valid:", arrays);
-            return;
-        }
-
-        const data = {
-            labels: arrays[1],
-            datasets: [{
-                label: "",
-                data: arrays[0],
-                backgroundColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
-                borderColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
-                borderWidth: 1
-            }]
-        };
-
-        const options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            legend: { display: false },
-            scales: {
-                yAxes: [{
-                    ticks: { beginAtZero: true, min: 0 }
-                }]
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_the_annual_target', {
+            model: "crm.lead",
+            method: "get_the_annual_target",
+            args: [{}],
+            kwargs: {},
+        }).then(function (arrays) {
+            // pastikan arrays berisi data valid
+            if (!arrays || !Array.isArray(arrays[0]) || !Array.isArray(arrays[1])) {
+                console.warn("⚠️ Data annual target tidak valid:", arrays);
+                return;
             }
-        };
 
-        // buat chart hanya jika konteks ada
-        if (ctx.length) {
-            new Chart(ctx, {
-                type: "bar",
-                data: data,
-                options: options
-            });
-        }
-    }).catch(function (err) {
-        console.error("❌ Gagal ambil data annual target:", err);
-    });
-}
+            const data = {
+                labels: arrays[1],
+                datasets: [{
+                    label: "",
+                    data: arrays[0],
+                    backgroundColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                    borderColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                    borderWidth: 1
+                }]
+            };
 
-/**
- * Renders a funnel (bar + pie) chart displaying lead stage data.
- * Fetches data via JSON-RPC and generates charts using Highcharts.
- */
-funnel_chart() {
-    const self = this;
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: { display: false },
+                scales: {
+                    yAxes: [{
+                        ticks: { beginAtZero: true, min: 0 }
+                    }]
+                }
+            };
 
-    jsonrpc('/web/dataset/call_kw/crm.lead/get_lead_stage_data', {
-        model: "crm.lead",
-        method: "get_lead_stage_data",
-        args: [{}],
-        kwargs: {},
-    }).then(function (callbacks) {
-        // pastikan callbacks array of [label, value]
-        if (!Array.isArray(callbacks)) {
-            console.warn("⚠️ Data funnel chart kosong atau invalid:", callbacks);
-            callbacks = [];
-        }
-
-        // ---- Bar Chart (Opportunity by Stage) ----
-        const barContainer = document.getElementById("container");
-        if (barContainer) {
-            const barData = callbacks.map(item => [
-                item && item[0] ? String(item[0]) : "",
-                item && item[1] ? Number(item[1]) : 0
-            ]);
-
-            Highcharts.chart(barContainer, {
-                chart: { type: "column" },
-                title: { text: "Opportunity by Stage" },
-                credits: { enabled: false },
-                xAxis: {
-                    type: "category",
-                    title: { text: "Stages" }
-                },
-                yAxis: {
-                    title: { text: "Number of Leads" }
-                },
-                legend: { enabled: false },
-                series: [{
-                    name: "Leads",
-                    data: barData,
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.y}'
-                    }
-                }],
-            });
-        }
-
-        // ---- Pie Chart (Won vs Lost) ----
-        let won_count = 0;
-        let lost_count = 0;
-        callbacks.forEach(function (item) {
-            const name = item && item[0] ? item[0].toLowerCase() : "";
-            const value = item && item[1] ? Number(item[1]) : 0;
-            if (name === "won") won_count = value;
-            if (name === "lost") lost_count = value;
+            // buat chart hanya jika konteks ada
+            if (ctx.length) {
+                new Chart(ctx, {
+                    type: "bar",
+                    data: data,
+                    options: options
+                });
+            }
+        }).catch(function (err) {
+            console.error("❌ Gagal ambil data annual target:", err);
         });
+    }
 
-        const pieContainer = document.getElementById("won_lost_pie");
-        if (pieContainer) {
-            Highcharts.chart(pieContainer, {
-                chart: { type: 'pie' },
-                title: { text: null },
-                credits: { enabled: false },
-                plotOptions: {
-                    pie: {
-                        showInLegend: true,
-                        dataLabels: { enabled: false },
-                        size: '90%',
-                        cursor: 'pointer',
-                        point: {
-                            events: {
-                                click: function () {
-                                    try {
-                                        if (!self || !self.action) {
-                                            console.warn("⚠️ Action Odoo tidak tersedia");
-                                            return;
+    /**
+     * Renders a bar chart to display annual target data.
+     * Fetches data via JSON-RPC and generates a chart using Chart.js.
+     */
+    render_annual_chart_graph() {
+        const self = this;
+        const ctx = $(".annual_target");
+
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_the_annual_target', {
+            model: "crm.lead",
+            method: "get_the_annual_target",
+            args: [{}],
+            kwargs: {},
+        }).then(function (arrays) {
+            if (!arrays || !Array.isArray(arrays[0]) || !Array.isArray(arrays[1])) {
+                console.warn("⚠️ Data annual target tidak valid:", arrays);
+                return;
+            }
+
+            const data = {
+                labels: arrays[1],
+                datasets: [{
+                    label: "",
+                    data: arrays[0],
+                    backgroundColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                    borderColor: ["#003f5c", "#f95d6a", "#ff7c43", "#6d5c16"],
+                    borderWidth: 1
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: { display: false },
+                scales: {
+                    yAxes: [{
+                        ticks: { beginAtZero: true, min: 0 }
+                    }]
+                }
+            };
+
+            if (ctx.length) {
+                new Chart(ctx, {
+                    type: "bar",
+                    data: data,
+                    options: options
+                });
+            }
+        }).catch(function (err) {
+            console.error("❌ Gagal ambil data annual target:", err);
+        });
+    }
+
+    /**
+     * Renders a funnel (bar + pie) chart displaying lead stage data.
+     * Fetches data via JSON-RPC and generates charts using Highcharts.
+     */
+    funnel_chart() {
+    
+        const self = this;
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_lead_stage_data', {
+            model: "crm.lead",
+            method: "get_lead_stage_data",
+            args: [{}],
+            kwargs: {},
+        }).then(function (callbacks) {
+    
+            if (!Array.isArray(callbacks)) {
+                console.warn("⚠️ Data funnel chart kosong atau invalid:", callbacks);
+                callbacks = [];
+            }
+
+            // ---- Bar Chart (Opportunity by Stage) ----
+            const barContainer = document.getElementById("container");
+            if (barContainer) {
+                const barData = callbacks.map(item => [
+                    item && item[0] ? String(item[0]) : "",
+                    item && item[1] ? Number(item[1]) : 0
+                ]);
+
+                Highcharts.chart(barContainer, {
+                    chart: { type: "column" },
+                    title: { text: "Opportunity by Stage" },
+                    credits: { enabled: false },
+                    xAxis: { type: "category", title: { text: "Stages" } },
+                    yAxis: { title: { text: "Number of Leads" } },
+                    legend: { enabled: false },
+                    series: [{
+                        name: "Leads",
+                        data: barData,
+                        dataLabels: { enabled: true, format: '{point.y}' }
+                    }],
+                });
+            }
+
+            // ---- Pie Chart (Won vs Lost) ----
+            let won_count = 0;
+            let lost_count = 0;
+            callbacks.forEach(function (item) {
+                const name = item && item[0] ? item[0].toLowerCase() : "";
+                const value = item && item[1] ? Number(item[1]) : 0;
+                if (name === "won") won_count = value;
+                if (name === "lost") lost_count = value;
+            });
+
+            const pieContainer = document.getElementById("won_lost_pie");
+            if (pieContainer) {
+                Highcharts.chart(pieContainer, {
+                    chart: { type: 'pie' },
+                    title: { text: null },
+                    credits: { enabled: false },
+                    plotOptions: {
+                        pie: {
+                            showInLegend: true,
+                            dataLabels: { enabled: false },
+                            size: '90%',
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function () {
+                                        try {
+                                            if (!self || !self.action) {
+                                                console.warn("⚠️ Action Odoo tidak tersedia");
+                                                return;
+                                            }
+                                            const context = {
+                                                search_default_assigned_to_me: 1,
+                                            };
+                                            if (this.name === "Won") {
+                                                context.search_default_won = 1;
+                                            } else if (this.name === "Lost") {
+                                                context.search_default_lost = 1;
+                                            }
+                                            self.action.doAction({
+                                                type: 'ir.actions.act_window',
+                                                res_model: 'crm.lead',
+                                                view_mode: 'kanban',
+                                                name: 'My Pipeline',
+                                                views: [[false, 'kanban'], [false, 'form']],
+                                                target: 'current',
+                                                context: context,
+                                            });
+                                        } catch (err) {
+                                            console.error("❌ Error buka pipeline:", err);
                                         }
-                                        const context = {
-                                            search_default_assigned_to_me: 1,
-                                        };
-                                        if (this.name === "Won") {
-                                            context.search_default_won = 1;
-                                        } else if (this.name === "Lost") {
-                                            context.search_default_lost = 1;
-                                        }
-                                        self.action.doAction({
-                                            type: 'ir.actions.act_window',
-                                            res_model: 'crm.lead',
-                                            view_mode: 'kanban',
-                                            name: 'My Pipeline',
-                                            views: [[false, 'kanban'], [false, 'form']],
-                                            target: 'current',
-                                            context: context,
-                                        });
-                                    } catch (err) {
-                                        console.error("❌ Error buka pipeline:", err);
                                     }
                                 }
                             }
                         }
+                    },
+                    legend: {
+                        align: 'right',
+                        verticalAlign: 'middle',
+                        layout: 'vertical',
+                        itemStyle: { fontSize: '14px', fontWeight: 'normal' }
+                    },
+                    series: [{
+                        name: 'Leads',
+                        colorByPoint: true,
+                        data: [
+                            { name: 'Won', y: Number(won_count) || 0, color: '#093FB4' },
+                            { name: 'Lost', y: Number(lost_count) || 0, color: '#F5D2D2' }
+                        ]
+                    }]
+                });
+            }
+        }).catch(function (err) {
+            console.error("❌ Gagal ambil data lead stage:", err);
+        });
+    }
+/**
+ * Renders a horizontal bar chart for Top Salesperson by Invoice (Chart.js)
+ * - Menampilkan nominal invoice di ujung bar kanan.
+ * - Menghapus garis dan angka di bawah chart.
+ * - Kompatibel Chart.js v2 & v3.
+ */
+render_invoice_chart() {
+    const canvas = document.getElementById('invoice_chart');
+    const data = this.top_sp_by_invoice || [];
+
+    if (!canvas) {
+        console.warn("⚠️ Canvas #invoice_chart tidak ditemukan di DOM.");
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // Kalau tidak ada data → tampilkan teks 'No data'
+    if (!data.length) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 14px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        ctx.fillStyle = '#777';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data available', canvas.width / 2, canvas.height / 2);
+        console.warn("⚠️ Tidak ada data invoice untuk chart.");
+        return;
+    }
+
+    // Ambil data dari hasil RPC
+    const labels = data.map(item => item[0]);          // nama sales
+    const values = data.map(item => Number(item[1]));  // total invoice
+    const currency = data[0][2] || 'Rp';
+
+    // Hapus chart lama kalau ada
+    if (this.invoiceChart && typeof this.invoiceChart.destroy === 'function') {
+        this.invoiceChart.destroy();
+    }
+
+    // Warna batang bervariasi biar lebih menarik
+    const colors = [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e',
+        '#e74a3b', '#858796', '#20c997', '#6f42c1',
+        '#fd7e14', '#17a2b8'
+    ];
+    const bgColors = labels.map((_, i) => colors[i % colors.length]);
+
+    // Buat chart baru
+    const chart = new Chart(ctx, {
+        type: 'horizontalBar', // untuk Chart.js v2, v3 pakai {type:'bar', indexAxis:'y'}
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Invoice',
+                data: values,
+                backgroundColor: bgColors,
+                borderWidth: 0,
+                borderRadius: 6,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { right: 60 }
+            },
+            legend: { display: false },
+            title: {
+                display: false
+            },
+            tooltips: {
+                enabled: true,
+                callbacks: {
+                    title: function(tooltipItem, data) {
+                        return data.labels[tooltipItem[0].index];
+                    },
+                    label: function(tooltipItem, data) {
+                        const value = data.datasets[0].data[tooltipItem.index];
+                        return currency + ' ' + value.toLocaleString('id-ID');
                     }
-                },
-                legend: {
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    layout: 'vertical',
-                    itemStyle: { fontSize: '14px', fontWeight: 'normal' }
-                },
-                series: [{
-                    name: 'Leads',
-                    colorByPoint: true,
-                    data: [
-                        { name: 'Won', y: Number(won_count) || 0, color: '#093FB4' },
-                        { name: 'Lost', y: Number(lost_count) || 0, color: '#F5D2D2' }
-                    ]
+                }
+            },
+            scales: {
+                xAxes: [{
+                    display: false, // ❌ Hilangkan seluruh angka & grid bawah
+                    gridLines: { display: false, drawBorder: false },
+                    ticks: { display: false }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontSize: 13,
+                        autoSkip: false
+                    },
+                    gridLines: {
+                        display: true,        // ✅ Biarkan hanya satu garis baseline
+                        drawBorder: true,
+                        drawOnChartArea: false
+                    }
                 }]
-            });
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart',
+                onComplete: function() {
+                    const chartInstance = this.chart;
+                    const ctx = chartInstance.ctx;
+                    ctx.font = 'bold 12px "Helvetica Neue", Helvetica, Arial, sans-serif';
+                    ctx.fillStyle = '#333';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+
+                    this.data.datasets.forEach(function(dataset, i) {
+                        const meta = chartInstance.controller.getDatasetMeta(i);
+                        meta.data.forEach(function(bar, index) {
+                            const value = dataset.data[index];
+                            if (value > 0) {
+                                const label = currency + ' ' + value.toLocaleString('id-ID');
+                                const posX = bar._model ? bar._model.x + 10 : bar.x + 10;
+                                const posY = bar._model ? bar._model.y : bar.y;
+                                ctx.fillText(label, posX, posY);
+                            }
+                        });
+                    });
+                }
+            }
         }
-    }).catch(function (err) {
-        console.error("❌ Gagal ambil data lead stage:", err);
     });
+
+    this.invoiceChart = chart;
 }
 
-    /**
-     * Fetches lead details via JSON-RPC and appends the data to specific HTML elements.
-     */
-    renderElement(ev) {
-        var self = this;
-        jsonrpc('/web/dataset/call_kw/crm.lead/lead_details_user', {
-            model: "crm.lead",
-            method: "lead_details_user",
-            args: [{}],
-            kwargs: {},
-        }).then(function(result) {
-            $('#leads_this_month').append('<span>' + result.record + '</span>');
-            $('#opp_this_month').append('<span>' + result.record_op + '</span>');
-            $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-            $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_month').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
-            $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
-            $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '</span>');
-            $('#target').append('<span>' + result.target + '</span>');
-            $('#ytd_target').append('<span>' + result.ytd_target + '</span>');
-            $('#difference').append('<span>' + result.difference + '</span>');
-            $('#won').append('<span>' + result.won + '</span>');
-        })
-    }
+
+
+/**
+ * Fetches lead details via JSON-RPC and appends the data to specific HTML elements.
+ */
+renderElement(ev) {
+    var self = this;
+    jsonrpc('/web/dataset/call_kw/crm.lead/lead_details_user', {
+        model: "crm.lead",
+        method: "lead_details_user",
+        args: [{}],
+        kwargs: {},
+    }).then(function(result) {
+        $('#leads_this_month').append('<span>' + result.record + '</span>');
+        $('#opp_this_month').append('<span>' + result.record_op + '</span>');
+        $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
+        $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
+        $('#ratio_this_month').append('<span>' + parseFloat(result.record_ratio).toFixed(2) + '</span>');
+        $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec' + '</span>');
+        $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '</span>');
+        $('#target').append('<span>' + result.target + '</span>');
+        $('#ytd_target').append('<span>' + result.ytd_target + '</span>');
+        $('#difference').append('<span>' + result.difference + '</span>');
+        $('#won').append('<span>' + result.won + '</span>');
+    })
+}
 }
 CRMDashboard.template = "CRMdashboard"
 registry.category("actions").add("crm_dashboard", CRMDashboard)

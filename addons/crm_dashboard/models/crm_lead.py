@@ -597,16 +597,66 @@ class CRMLead(models.Model):
         return {'count_unassigned': count_unassigned}
 
     @api.model
-    def get_top_sp_by_invoice(self, kwargs):
-        """Top 10 Sales Person by Invoice Table"""
-        self._cr.execute('''select user_id,sum(amount_total) as total
-        from sale_order where invoice_status='invoiced'
-        group by user_id order by total desc limit 10''')
-        data1 = self._cr.fetchall()
-        sales_person_invoice = [[
-            self.env['res.users'].browse(rec[0]).name, rec[1],
-            self.env['res.users'].browse(rec[0]).company_id.currency_id.symbol,
-            idx + 1, ] for idx, rec in enumerate(data1)]
+    def get_top_sp_by_invoice(self, kwargs=None):
+        """
+        Top N Sales Person by Invoice (Final, robust)
+        Returns {'sales_person_invoice': [[name, total, currency_symbol, rank], ...]}
+        Optional kwargs: {'limit': <int>}
+        Notes:
+         - Do NOT filter by res_users.active (we want to show non-active users too)
+         - Use res_partner.name as primary display name, fallback to res_users.login
+        """
+        if kwargs is None:
+            kwargs = {}
+
+        try:
+            limit = int(kwargs.get('limit', 10))
+        except Exception:
+            limit = 10
+
+        # Query: aggregate invoice totals by the `invoice_user_id` relation.
+        # Use LEFT JOINs so we still count invoices even if user/partner data incomplete.
+        query = """
+            SELECT
+                COALESCE(rp.name, ru.login, 'Unassigned') AS salesperson,
+                COALESCE(SUM(am.amount_total), 0) AS total,
+                COALESCE(ru.company_id, %s) AS company_id
+            FROM account_move am
+            LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
+            LEFT JOIN res_partner rp ON ru.partner_id = rp.id
+            WHERE am.move_type = 'out_invoice'
+              AND am.state = 'posted'
+            GROUP BY rp.name, ru.login, ru.company_id
+            ORDER BY total DESC
+            LIMIT %s
+        """
+
+        # Execute and fetch
+        self._cr.execute(query, (self.env.company.id, limit))
+        rows = self._cr.fetchall()
+
+        sales_person_invoice = []
+        company_cache = {}
+
+        for idx, row in enumerate(rows):
+            salesperson = row[0] or 'Unknown'
+            total = float(row[1] or 0.0)
+            company_id = row[2] or self.env.company.id
+
+            # cache currency symbol per company
+            if company_id in company_cache:
+                currency_symbol = company_cache[company_id]
+            else:
+                comp = self.env['res.company'].browse(company_id)
+                currency_symbol = (
+                    comp.currency_id.symbol
+                    if comp and comp.currency_id
+                    else self.env.company.currency_id.symbol
+                )
+                company_cache[company_id] = currency_symbol
+
+            sales_person_invoice.append([salesperson, total, currency_symbol, idx + 1])
+
         return {'sales_person_invoice': sales_person_invoice}
 
     @api.model
