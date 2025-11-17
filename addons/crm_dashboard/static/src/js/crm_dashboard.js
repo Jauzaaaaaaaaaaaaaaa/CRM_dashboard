@@ -20,6 +20,13 @@ export class CRMDashboard extends Component {
         onMounted(this.onMounted);
     }
 
+        // ⬇⬇⬇ TARUH DI SINI (tepat setelah setup) ⬇⬇⬇
+    formatCurrency(num) {
+        if (num === null || num === undefined) return "0";
+        num = parseFloat(num).toString();
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
     async onWillStart() {
         var self = this;
         this.login_employee = {};
@@ -240,104 +247,136 @@ export class CRMDashboard extends Component {
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_week', {
             model: 'crm.lead',
             method: 'crm_week',
-            args: [{  by_all: true  }],
+            args: [{ by_all: true }],
             kwargs: {},
         }).then(function(result) {
-            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
-            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
-            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
 
-            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').show().empty();
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year, #followup_this_year').hide();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter, #followup_this_quarter').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month, #followup_this_month').hide();
+
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week, #followup_this_week').show().empty();
 
             $('#leads_this_week').append('<span>' + result.record + '</span>');
             $('#opp_this_week').append('<span>' + result.record_op + '</span>');
-            $('#exp_rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-            $('#rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_week').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
+
+            $('#exp_rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev_exp) + '</span>');
+            $('#rev_this_week').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev) + '</span>');
+
+            $('#ratio_this_week').append('<span>' + Math.round(result.lost_ratio) + '%</span>');
             $('#avg_time_this_week').append('<span>' + result.avg_time + '&nbspsec</span>');
             $('#total_revenue_this_week').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            // FOLLOW UP DO
+            $('#followup_this_week').append('<span>' + result.follow_up_do + '</span>');
 
             self.refreshActiveLeads("this_week");
         });
     }
+
+
 
     onclick_this_month(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_month', {
             model: 'crm.lead',
             method: 'crm_month',
-            args: [{  by_all: true  }],
+            args: [{ by_all: true }],
             kwargs: {},
         }).then(function(result) {
-            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
-            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
-            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
 
-            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').show().empty();
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year, #followup_this_year').hide();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter, #followup_this_quarter').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week, #followup_this_week').hide();
+
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month, #followup_this_month').show().empty();
 
             $('#leads_this_month').append('<span>' + result.record + '</span>');
             $('#opp_this_month').append('<span>' + result.record_op + '</span>');
-            $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-            $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_month').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
+
+            $('#exp_rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev_exp) + '</span>');
+            $('#rev_this_month').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev) + '</span>');
+
+            $('#ratio_this_month').append('<span>' + Math.round(result.lost_ratio) + '%</span>');
             $('#avg_time_this_month').append('<span>' + result.avg_time + '&nbspsec</span>');
             $('#total_revenue_this_month').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            // FOLLOW UP DO
+            $('#followup_this_month').append('<span>' + result.follow_up_do + '</span>');
 
             self.refreshActiveLeads("this_month");
         });
     }
+
+
 
     onclick_this_quarter(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_quarter', {
             model: 'crm.lead',
             method: 'crm_quarter',
-            args: [{  by_all: true  }],
+            args: [{ by_all: true }],
             kwargs: {},
         }).then(function(result) {
-            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').hide();
-            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
-            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
 
-            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').show().empty();
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year, #followup_this_year').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month, #followup_this_month').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week, #followup_this_week').hide();
+
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter, #followup_this_quarter').show().empty();
 
             $('#leads_this_quarter').append('<span>' + result.record + '</span>');
             $('#opp_this_quarter').append('<span>' + result.record_op + '</span>');
-            $('#exp_rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-            $('#rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_quarter').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
+
+            $('#exp_rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev_exp) + '</span>');
+            $('#rev_this_quarter').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev) + '</span>');
+
+            $('#ratio_this_quarter').append('<span>' + Math.round(result.lost_ratio) + '%</span>');
             $('#avg_time_this_quarter').append('<span>' + result.avg_time + '&nbspsec</span>');
             $('#total_revenue_this_quarter').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            // FOLLOW UP DO
+            $('#followup_this_quarter').append('<span>' + result.follow_up_do + '</span>');
 
             self.refreshActiveLeads("this_quarter");
         });
     }
 
+
+
     onclick_this_year(ev) {
         var self = this;
-            jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
-                model: 'crm.lead',
-                method: 'crm_year',
-                args: [{  by_all: true  }],
-                kwargs: {},
-            }).then(function (result) {
-            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter').hide();
-            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month').hide();
-            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week').hide();
+        jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
+            model: 'crm.lead',
+            method: 'crm_year',
+            args: [{ by_all: true }],
+            kwargs: {},
+        }).then(function(result) {
 
-            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year').show().empty();
+            $('#leads_this_quarter, #opp_this_quarter, #exp_rev_this_quarter, #rev_this_quarter, #ratio_this_quarter, #avg_time_this_quarter, #total_revenue_this_quarter, #followup_this_quarter').hide();
+            $('#leads_this_month, #opp_this_month, #exp_rev_this_month, #rev_this_month, #ratio_this_month, #avg_time_this_month, #total_revenue_this_month, #followup_this_month').hide();
+            $('#leads_this_week, #opp_this_week, #exp_rev_this_week, #rev_this_week, #ratio_this_week, #avg_time_this_week, #total_revenue_this_week, #followup_this_week').hide();
+
+            $('#leads_this_year, #opp_this_year, #exp_rev_this_year, #rev_this_year, #ratio_this_year, #avg_time_this_year, #total_revenue_this_year, #followup_this_year').show().empty();
 
             $('#leads_this_year').append('<span>' + result.record + '</span>');
             $('#opp_this_year').append('<span>' + result.record_op + '</span>');
-            $('#exp_rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev_exp + '</span>');
-            $('#rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + result.record_rev + '</span>');
-            $('#ratio_this_year').append('<span>' + parseFloat(result.lost_ratio).toFixed(2) + '%</span>');
+
+            $('#exp_rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev_exp) + '</span>');
+            $('#rev_this_year').append('<span>' + self.monthly_goals[2] + '&nbsp' + self.formatCurrency(result.record_rev) + '</span>');
+
+            $('#ratio_this_year').append('<span>' + Math.round(result.lost_ratio) + '%</span>');
             $('#avg_time_this_year').append('<span>' + result.avg_time + '&nbspsec</span>');
             $('#total_revenue_this_year').append('<span>' + result.opportunity_ratio_value + '%</span>');
+
+            // FOLLOW UP DO
+            $('#followup_this_year').append('<span>' + result.follow_up_do + '</span>');
 
             self.refreshActiveLeads("this_year");
         });
     }
+
+
 
     onMounted() {
         const el = document.querySelector('#active_leads');

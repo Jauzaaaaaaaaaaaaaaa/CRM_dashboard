@@ -855,22 +855,198 @@ class CRMLead(models.Model):
         }
         return data
 
+
     @api.model
     def crm_year(self, kwargs):
+        """Yearly CRM KPIs (robust): returns follow_up_do plus usual KPIs."""
+        # normalize rpc arg shapes (support both direct dict or args: [{...}])
+        if isinstance(kwargs, (list, tuple)) and len(kwargs) and isinstance(kwargs[0], dict):
+            kwargs = kwargs[0]
+        kwargs = kwargs or {}
         session_user = self.env.user
         session_user_id = session_user.id
-        by_all = kwargs.get('by_all', False)
+        by_all = bool(kwargs.get('by_all', False))
 
-        if by_all:
-            user_filter = ""
-        else:
-            user_filter = f"AND user_id = {session_user_id}"
+        user_filter = "" if by_all else f"AND user_id = {session_user_id}"
+
+        # helper to build SQL tuple safely (returns string like "(8)" or "(4,5)" or "(0)")
+        def _sql_tuple(ids):
+            if not ids:
+                return "(0)"
+            # if single integer or single-item list
+            try:
+                # normalize to list of ints
+                ids_list = [int(i) for i in ids]
+            except Exception:
+                # if ids is a single int
+                try:
+                    return f"({int(ids)})"
+                except Exception:
+                    return "(0)"
+            if len(ids_list) == 1:
+                return f"({ids_list[0]})"
+            return f"({','.join(str(i) for i in ids_list)})"
+
+        # determine stage groups
+        try:
+            won_stage_ids = _sql_tuple(self.env['crm.stage'].search([('is_won', '=', True)]).ids)
+            lost_stage_ids = _sql_tuple(self.env['crm.stage'].search([('fold', '=', True)]).ids)
+        except Exception:
+            # defensive fallback
+            won_stage_ids = "(0)"
+            lost_stage_ids = "(0)"
+
+        new_stage_id = 1  # your New stage id
+
+        # ----- Leads (year) -----
+        self._cr.execute(f"""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE EXTRACT(YEAR FROM create_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            {user_filter}
+        """)
+        crm_lead_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
+
+        # ----- Opportunities (year) -----
+        self._cr.execute(f"""
+            SELECT COUNT(id) AS count
+            FROM crm_lead
+            WHERE type = 'opportunity'
+              AND EXTRACT(YEAR FROM create_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            {user_filter}
+        """)
+        opportunity_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
+
+        # ----- Expected revenue (year) -----
+        self._cr.execute(f"""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_rev
+            FROM crm_lead
+            WHERE type = 'opportunity' AND active = true
+              AND EXTRACT(YEAR FROM create_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            {user_filter}
+        """)
+        exp_revenue_value = float((self._cr.dictfetchone() or {'total_rev': 0})['total_rev'])
+
+        # ----- Won revenue (year) - use date_closed -----
+        self._cr.execute(f"""
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_won
+            FROM crm_lead
+            WHERE type = 'opportunity'
+              AND stage_id IN {won_stage_ids}
+              AND date_closed IS NOT NULL
+              AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM CURRENT_DATE)
+            {user_filter}
+        """)
+        revenue_value = float((self._cr.dictfetchone() or {'total_won': 0})['total_won'])
+
+        ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
+
+        # ----- Win & Lost counts (year) - based on date_closed -----
+        self._cr.execute(f"""
+            SELECT
+                SUM(CASE WHEN stage_id IN {won_stage_ids} AND date_closed IS NOT NULL
+                    AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN stage_id IN {lost_stage_ids} AND date_closed IS NOT NULL
+                    AND EXTRACT(YEAR FROM date_closed) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 ELSE 0 END) AS lost_count
+            FROM crm_lead
+            WHERE type = 'opportunity'
+            {user_filter}
+        """)
+        opp = self._cr.dictfetchone() or {}
+        total_won = int(opp.get('won_count') or 0)
+        total_lost = int(opp.get('lost_count') or 0)
+        total_compared = total_won + total_lost
+        win_ratio_value = round((total_won / total_compared) * 100, 2) if total_compared else 0.0
+        lost_ratio_value = 100 - win_ratio_value if total_compared else 0.0
+
+        # ----- Follow Up Do (year) - count opportunities created this year that are active AND stage NOT in (New, won, lost) -----
+        try:
+            self._cr.execute(f"""
+                SELECT COUNT(id) AS cnt
+                FROM crm_lead
+                WHERE type = 'opportunity'
+                  AND active = true
+                  AND EXTRACT(YEAR FROM create_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+                  AND stage_id NOT IN ({new_stage_id})
+                  AND stage_id NOT IN {won_stage_ids}
+                  AND stage_id NOT IN {lost_stage_ids}
+                {user_filter}
+            """)
+            follow_up_do = int((self._cr.dictfetchone() or {'cnt': 0})['cnt'])
+        except Exception:
+            follow_up_do = 0
+
+        # ----- Avg close time (year) -----
+        self._cr.execute(f"""
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_sec
+            FROM crm_lead
+            WHERE date_conversion IS NOT NULL
+              AND EXTRACT(YEAR FROM date_conversion) = EXTRACT(YEAR FROM CURRENT_DATE)
+            {user_filter}
+        """)
+        avg_seconds = float((self._cr.dictfetchone() or {'avg_sec': 0})['avg_sec'] or 0)
+        record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
+
+        return {
+            'record': crm_lead_value,
+            'record_op': opportunity_value,
+            'record_rev_exp': exp_revenue_value,
+            'record_rev': revenue_value,
+            'record_ratio': ratio_value,
+            'opportunity_ratio_value': win_ratio_value,
+            'lost_ratio': lost_ratio_value,
+            'avg_time': record_avg_time,
+            'follow_up_do': follow_up_do,
+        }
+
+
+    @api.model
+    def crm_quarter(self, kwargs):
+        """Quarterly KPIs (robust)."""
+        if isinstance(kwargs, (list, tuple)) and len(kwargs) and isinstance(kwargs[0], dict):
+            kwargs = kwargs[0]
+        kwargs = kwargs or {}
+        session_user = self.env.user
+        session_user_id = session_user.id
+        by_all = bool(kwargs.get('by_all', False))
+        user_filter = "" if by_all else f"AND user_id = {session_user_id}"
+
+        today = fields.Date.today()
+        current_year = today.year
+        current_month = today.month
+        quarter = (current_month - 1) // 3 + 1
+        start_month = (quarter - 1) * 3 + 1
+        end_month = start_month + 2
+
+        def _sql_tuple(ids):
+            if not ids:
+                return "(0)"
+            try:
+                ids_list = [int(i) for i in ids]
+            except Exception:
+                try:
+                    return f"({int(ids)})"
+                except Exception:
+                    return "(0)"
+            if len(ids_list) == 1:
+                return f"({ids_list[0]})"
+            return f"({','.join(str(i) for i in ids_list)})"
+
+        try:
+            won_stage_ids = _sql_tuple(self.env['crm.stage'].search([('is_won', '=', True)]).ids)
+            lost_stage_ids = _sql_tuple(self.env['crm.stage'].search([('fold', '=', True)]).ids)
+        except Exception:
+            won_stage_ids = "(0)"
+            lost_stage_ids = "(0)"
+
+        new_stage_id = 1
 
         # Leads
         self._cr.execute(f"""
             SELECT COUNT(id) AS count
             FROM crm_lead
-            WHERE EXTRACT(YEAR FROM create_date) = EXTRACT(YEAR FROM DATE(NOW()))
+            WHERE EXTRACT(YEAR FROM create_date) = {current_year}
+              AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
             {user_filter}
         """)
         crm_lead_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
@@ -879,8 +1055,9 @@ class CRMLead(models.Model):
         self._cr.execute(f"""
             SELECT COUNT(id) AS count
             FROM crm_lead
-            WHERE type='opportunity'
-            AND EXTRACT(YEAR FROM create_date)=EXTRACT(YEAR FROM DATE(NOW()))
+            WHERE type = 'opportunity'
+              AND EXTRACT(YEAR FROM create_date) = {current_year}
+              AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
             {user_filter}
         """)
         opportunity_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
@@ -889,56 +1066,79 @@ class CRMLead(models.Model):
         self._cr.execute(f"""
             SELECT COALESCE(SUM(expected_revenue), 0) AS total_rev
             FROM crm_lead
-            WHERE type='opportunity' AND active=true
-            AND EXTRACT(YEAR FROM create_date)=EXTRACT(YEAR FROM DATE(NOW()))
+            WHERE type = 'opportunity' AND active = true
+              AND EXTRACT(YEAR FROM create_date) = {current_year}
+              AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
             {user_filter}
         """)
         exp_revenue_value = float((self._cr.dictfetchone() or {'total_rev': 0})['total_rev'])
 
-        # Won revenue
+        # Won revenue (by date_closed)
         self._cr.execute(f"""
             SELECT COALESCE(SUM(expected_revenue), 0) AS total_won
             FROM crm_lead
-            WHERE type='opportunity' AND stage_id=4
-            AND EXTRACT(YEAR FROM date_closed)=EXTRACT(YEAR FROM DATE(NOW()))
+            WHERE type = 'opportunity'
+              AND stage_id IN {won_stage_ids}
+              AND date_closed IS NOT NULL
+              AND EXTRACT(YEAR FROM date_closed) = {current_year}
+              AND EXTRACT(MONTH FROM date_closed) BETWEEN {start_month} AND {end_month}
             {user_filter}
         """)
         revenue_value = float((self._cr.dictfetchone() or {'total_won': 0})['total_won'])
 
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
-        # Win & lost
+        # Win & Lost counts (by date_closed)
         self._cr.execute(f"""
             SELECT
-                SUM(CASE WHEN probability=100 AND active=true
-                    AND EXTRACT(YEAR FROM date_closed)=EXTRACT(YEAR FROM DATE(NOW()))
+                SUM(CASE WHEN stage_id IN {won_stage_ids} AND date_closed IS NOT NULL
+                    AND EXTRACT(YEAR FROM date_closed) = {current_year}
+                    AND EXTRACT(MONTH FROM date_closed) BETWEEN {start_month} AND {end_month}
                     THEN 1 ELSE 0 END) AS won_count,
-                SUM(CASE WHEN probability=0 AND active=false
-                    AND EXTRACT(YEAR FROM create_date)=EXTRACT(YEAR FROM DATE(NOW()))
+                SUM(CASE WHEN stage_id IN {lost_stage_ids} AND date_closed IS NOT NULL
+                    AND EXTRACT(YEAR FROM date_closed) = {current_year}
+                    AND EXTRACT(MONTH FROM date_closed) BETWEEN {start_month} AND {end_month}
                     THEN 1 ELSE 0 END) AS lost_count
             FROM crm_lead
-            WHERE type='opportunity'
+            WHERE type = 'opportunity'
             {user_filter}
         """)
         opp = self._cr.dictfetchone() or {}
         total_won = int(opp.get('won_count') or 0)
         total_lost = int(opp.get('lost_count') or 0)
-
         total_compared = total_won + total_lost
         win_ratio_value = round((total_won / total_compared) * 100, 2) if total_compared else 0.0
-        lost_ratio_value = round((100 - win_ratio_value), 2) if total_compared else 0.0
+        lost_ratio_value = 100 - win_ratio_value if total_compared else 0.0
+
+        # Follow Up Do (by create_date within quarter)
+        try:
+            self._cr.execute(f"""
+                SELECT COUNT(id) AS cnt
+                FROM crm_lead
+                WHERE type = 'opportunity'
+                  AND active = true
+                  AND EXTRACT(YEAR FROM create_date) = {current_year}
+                  AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
+                  AND stage_id NOT IN ({new_stage_id})
+                  AND stage_id NOT IN {won_stage_ids}
+                  AND stage_id NOT IN {lost_stage_ids}
+                {user_filter}
+            """)
+            follow_up_do = int((self._cr.dictfetchone() or {'cnt': 0})['cnt'])
+        except Exception:
+            follow_up_do = 0
 
         # Avg close time
         self._cr.execute(f"""
             SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_sec
             FROM crm_lead
             WHERE date_conversion IS NOT NULL
-            AND EXTRACT(YEAR FROM date_conversion)=EXTRACT(YEAR FROM DATE(NOW()))
+              AND EXTRACT(YEAR FROM date_conversion) = {current_year}
+              AND EXTRACT(MONTH FROM date_conversion) BETWEEN {start_month} AND {end_month}
             {user_filter}
         """)
         avg_seconds = float((self._cr.dictfetchone() or {'avg_sec': 0})['avg_sec'] or 0)
-
-        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+        record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         return {
             'record': crm_lead_value,
@@ -949,198 +1149,104 @@ class CRMLead(models.Model):
             'opportunity_ratio_value': win_ratio_value,
             'lost_ratio': lost_ratio_value,
             'avg_time': record_avg_time,
+            'follow_up_do': follow_up_do,
         }
 
 
     @api.model
-    def crm_quarter(self, kwargs):
+    def crm_month(self, kwargs):
+        """Monthly KPIs (robust)."""
+        if isinstance(kwargs, (list, tuple)) and len(kwargs) and isinstance(kwargs[0], dict):
+            kwargs = kwargs[0]
+        kwargs = kwargs or {}
         session_user = self.env.user
         session_user_id = session_user.id
-        by_all = kwargs.get('by_all', False)
+        by_all = bool(kwargs.get('by_all', False))
+        user_filter = "" if by_all else f"AND user_id = {session_user_id}"
 
-        if by_all:
-            user_filter = ""
-        else:
-            user_filter = f"AND user_id = {session_user_id}"
+        today = fields.Date.today()
+        current_month = today.month
+        current_year = today.year
 
-        current_month = fields.Date.today().month
-        current_year = fields.Date.today().year
-        quarter = (current_month - 1) // 3 + 1
+        def _sql_tuple(ids):
+            if not ids:
+                return "(0)"
+            try:
+                ids_list = [int(i) for i in ids]
+            except Exception:
+                try:
+                    return f"({int(ids)})"
+                except Exception:
+                    return "(0)"
+            if len(ids_list) == 1:
+                return f"({ids_list[0]})"
+            return f"({','.join(str(i) for i in ids_list)})"
 
-        start_month = (quarter - 1) * 3 + 1
-        end_month = start_month + 2
+        try:
+            won_stage_ids = _sql_tuple(self.env['crm.stage'].search([('is_won', '=', True)]).ids)
+            lost_stage_ids = _sql_tuple(self.env['crm.stage'].search([('fold', '=', True)]).ids)
+        except Exception:
+            won_stage_ids = "(0)"
+            lost_stage_ids = "(0)"
+        new_stage_id = 1
 
         # Leads
         self._cr.execute(f"""
-            SELECT COUNT(id)
+            SELECT COUNT(id) AS count
             FROM crm_lead
             WHERE EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
+              AND EXTRACT(MONTH FROM create_date) = {current_month}
             {user_filter}
         """)
         crm_lead_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
 
         # Opportunities
         self._cr.execute(f"""
-            SELECT COUNT(id)
+            SELECT COUNT(id) AS count
             FROM crm_lead
             WHERE type = 'opportunity'
-            AND EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
+              AND EXTRACT(YEAR FROM create_date) = {current_year}
+              AND EXTRACT(MONTH FROM create_date) = {current_month}
             {user_filter}
         """)
         opportunity_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
 
-        # Expected Revenue
+        # Expected revenue
         self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0)
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_rev
             FROM crm_lead
             WHERE type = 'opportunity' AND active = true
-            AND EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
+              AND EXTRACT(YEAR FROM create_date) = {current_year}
+              AND EXTRACT(MONTH FROM create_date) = {current_month}
             {user_filter}
         """)
-        exp_revenue_value = float((self._cr.dictfetchone() or {'coalesce': 0})['coalesce'])
+        exp_revenue_value = float((self._cr.dictfetchone() or {'total_rev': 0})['total_rev'])
 
-        # Revenue Won
+        # Won revenue (by date_closed)
         self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0)
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_won
             FROM crm_lead
-            WHERE type = 'opportunity' AND stage_id = 4
-            AND EXTRACT(YEAR FROM date_closed) = {current_year}
-            AND EXTRACT(MONTH FROM date_closed) BETWEEN {start_month} AND {end_month}
+            WHERE type = 'opportunity'
+              AND stage_id IN {won_stage_ids}
+              AND date_closed IS NOT NULL
+              AND EXTRACT(YEAR FROM date_closed) = {current_year}
+              AND EXTRACT(MONTH FROM date_closed) = {current_month}
             {user_filter}
         """)
-        revenue_value = float((self._cr.dictfetchone() or {'coalesce': 0})['coalesce'])
+        revenue_value = float((self._cr.dictfetchone() or {'total_won': 0})['total_won'])
 
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
-        # Win & Lost
+        # Win & Lost counts (by date_closed)
         self._cr.execute(f"""
             SELECT
-                SUM(CASE WHEN probability = 100 AND active = true
-                    AND EXTRACT(YEAR FROM date_closed) = {current_year}
-                    AND EXTRACT(MONTH FROM date_closed) BETWEEN {start_month} AND {end_month}
-                    THEN 1 ELSE 0 END) AS won_count,
-                SUM(CASE WHEN probability = 0 AND active = false
-                    AND EXTRACT(YEAR FROM create_date) = {current_year}
-                    AND EXTRACT(MONTH FROM create_date) BETWEEN {start_month} AND {end_month}
-                    THEN 1 ELSE 0 END) AS lost_count
-            FROM crm_lead
-            WHERE type = 'opportunity'
-            {user_filter}
-        """)
-        opp = self._cr.dictfetchone() or {}
-        total_won = int(opp.get('won_count') or 0)
-        total_lost = int(opp.get('lost_count') or 0)
-        total_compared = total_won + total_lost
-
-        if total_compared:
-            win_ratio_value = round((total_won / total_compared) * 100, 2)
-            lost_ratio_value = 100 - win_ratio_value
-        else:
-            win_ratio_value = 0.0
-            lost_ratio_value = 0.0
-
-        # Avg Close Time
-        self._cr.execute(f"""
-            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date)))
-            FROM crm_lead
-            WHERE date_conversion IS NOT NULL
-            AND EXTRACT(YEAR FROM date_conversion) = {current_year}
-            AND EXTRACT(MONTH FROM date_conversion) BETWEEN {start_month} AND {end_month}
-            {user_filter}
-        """)
-        avg_seconds = float((self._cr.dictfetchone() or {'avg': 0})['avg'] or 0)
-        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
-
-        return {
-            'record': crm_lead_value,
-            'record_op': opportunity_value,
-            'record_rev_exp': exp_revenue_value,
-            'record_rev': revenue_value,
-            'record_ratio': ratio_value,
-            'opportunity_ratio_value': win_ratio_value,
-            'lost_ratio': lost_ratio_value,
-            'avg_time': record_avg_time,
-        }
-
-
-    @api.model
-    def crm_month(self, kwargs):
-        """Month CRM Dropdown Filter (per-user / By All)"""
-        session_user = self.env.user
-        session_user_id = session_user.id
-        by_all = kwargs.get('by_all', False)
-
-        # BY ALL → semua lead
-        if by_all:
-            user_filter = ""
-        else:
-            user_filter = f"AND user_id = {session_user_id}"
-
-        today = fields.Date.today()
-        current_month = today.month
-        current_year = today.year
-
-
-
-        # Total CRM Leads (month)
-        self._cr.execute(f"""
-            SELECT COUNT(id) AS count
-            FROM crm_lead
-            WHERE EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) = {current_month}
-            {user_filter}
-        """)
-        crm_lead_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
-
-        # Total Opportunities (month)
-        self._cr.execute(f"""
-            SELECT COUNT(id) AS count
-            FROM crm_lead
-            WHERE type = 'opportunity'
-            AND EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) = {current_month}
-            {user_filter}
-        """)
-        opportunity_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
-
-        # Expected Revenue
-        self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_rev
-            FROM crm_lead
-            WHERE type = 'opportunity' AND active = true
-            AND EXTRACT(YEAR FROM create_date) = {current_year}
-            AND EXTRACT(MONTH FROM create_date) = {current_month}
-            {user_filter}
-        """)
-        exp_revenue_value = float((self._cr.dictfetchone() or {'sum_rev': 0})['sum_rev'])
-
-        # Revenue Won
-        self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0) AS sum_won_rev
-            FROM crm_lead
-            WHERE type = 'opportunity' AND stage_id = 4
-            AND EXTRACT(YEAR FROM date_closed) = {current_year}
-            AND EXTRACT(MONTH FROM date_closed) = {current_month}
-            {user_filter}
-        """)
-        revenue_value = float((self._cr.dictfetchone() or {'sum_won_rev': 0})['sum_won_rev'])
-
-        ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
-
-        # Win & Lost count
-        self._cr.execute(f"""
-            SELECT
-                SUM(CASE WHEN probability = 100 AND active = true
+                SUM(CASE WHEN stage_id IN {won_stage_ids} AND date_closed IS NOT NULL
                     AND EXTRACT(YEAR FROM date_closed) = {current_year}
                     AND EXTRACT(MONTH FROM date_closed) = {current_month}
                     THEN 1 ELSE 0 END) AS won_count,
-
-                SUM(CASE WHEN probability = 0 AND active = false
-                    AND EXTRACT(YEAR FROM create_date) = {current_year}
-                    AND EXTRACT(MONTH FROM create_date) = {current_month}
+                SUM(CASE WHEN stage_id IN {lost_stage_ids} AND date_closed IS NOT NULL
+                    AND EXTRACT(YEAR FROM date_closed) = {current_year}
+                    AND EXTRACT(MONTH FROM date_closed) = {current_month}
                     THEN 1 ELSE 0 END) AS lost_count
             FROM crm_lead
             WHERE type = 'opportunity'
@@ -1150,25 +1256,38 @@ class CRMLead(models.Model):
         total_won = int(opp.get('won_count') or 0)
         total_lost = int(opp.get('lost_count') or 0)
         total_compared = total_won + total_lost
+        win_ratio_value = round((total_won / total_compared) * 100, 2) if total_compared else 0.0
+        lost_ratio_value = 100 - win_ratio_value if total_compared else 0.0
 
-        if total_compared:
-            win_ratio_value = round((total_won / total_compared) * 100, 2)
-            lost_ratio_value = 100 - win_ratio_value
-        else:
-            win_ratio_value = 0.0
-            lost_ratio_value = 0.0
+        # Follow Up Do (by create_date in month)
+        try:
+            self._cr.execute(f"""
+                SELECT COUNT(id) AS cnt
+                FROM crm_lead
+                WHERE type = 'opportunity'
+                  AND active = true
+                  AND EXTRACT(YEAR FROM create_date) = {current_year}
+                  AND EXTRACT(MONTH FROM create_date) = {current_month}
+                  AND stage_id NOT IN ({new_stage_id})
+                  AND stage_id NOT IN {won_stage_ids}
+                  AND stage_id NOT IN {lost_stage_ids}
+                {user_filter}
+            """)
+            follow_up_do = int((self._cr.dictfetchone() or {'cnt': 0})['cnt'])
+        except Exception:
+            follow_up_do = 0
 
-        # Average Close Time
+        # Avg close time
         self._cr.execute(f"""
-            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_seconds
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_sec
             FROM crm_lead
             WHERE date_conversion IS NOT NULL
-            AND EXTRACT(YEAR FROM date_conversion) = {current_year}
-            AND EXTRACT(MONTH FROM date_conversion) = {current_month}
+              AND EXTRACT(YEAR FROM date_conversion) = {current_year}
+              AND EXTRACT(MONTH FROM date_conversion) = {current_month}
             {user_filter}
         """)
-        avg_seconds = float((self._cr.dictfetchone() or {'avg_seconds': 0})['avg_seconds'] or 0)
-        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+        avg_seconds = float((self._cr.dictfetchone() or {'avg_sec': 0})['avg_sec'] or 0)
+        record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         return {
             'record': crm_lead_value,
@@ -1179,81 +1298,102 @@ class CRMLead(models.Model):
             'opportunity_ratio_value': win_ratio_value,
             'lost_ratio': lost_ratio_value,
             'avg_time': record_avg_time,
+            'follow_up_do': follow_up_do,
         }
-
 
 
     @api.model
     def crm_week(self, kwargs):
-        """Week CRM Dropdown Filter (per-user / By All)"""
+        """Weekly KPIs (robust). By default follow_up_do counts opportunities created this week
+           that are active and not in New/won/lost stages. Use create_date window.
+        """
+        if isinstance(kwargs, (list, tuple)) and len(kwargs) and isinstance(kwargs[0], dict):
+            kwargs = kwargs[0]
+        kwargs = kwargs or {}
         session_user = self.env.user
         session_user_id = session_user.id
-        by_all = kwargs.get('by_all', False)
-
-        # BY ALL → semua lead
-        if by_all:
-            user_filter = ""
-        else:
-            user_filter = f"AND user_id = {session_user_id}"
+        by_all = bool(kwargs.get('by_all', False))
+        user_filter = "" if by_all else f"AND user_id = {session_user_id}"
 
         today = fields.Date.today()
         start_of_week = date_utils.start_of(today, 'week')
         end_of_week = date_utils.end_of(today, 'week')
+        # format to full timestamp strings (safe for BETWEEN)
+        start_str = start_of_week.strftime('%Y-%m-%d 00:00:00')
+        end_str = end_of_week.strftime('%Y-%m-%d 23:59:59')
 
+        def _sql_tuple(ids):
+            if not ids:
+                return "(0)"
+            try:
+                ids_list = [int(i) for i in ids]
+            except Exception:
+                try:
+                    return f"({int(ids)})"
+                except Exception:
+                    return "(0)"
+            if len(ids_list) == 1:
+                return f"({ids_list[0]})"
+            return f"({','.join(str(i) for i in ids_list)})"
 
+        try:
+            won_stage_ids = _sql_tuple(self.env['crm.stage'].search([('is_won', '=', True)]).ids)
+            lost_stage_ids = _sql_tuple(self.env['crm.stage'].search([('fold', '=', True)]).ids)
+        except Exception:
+            won_stage_ids = "(0)"
+            lost_stage_ids = "(0)"
+        new_stage_id = 1
 
-        # Total CRM Leads (week)
+        # Leads (week)
         self._cr.execute(f"""
-            SELECT COUNT(id)
+            SELECT COUNT(id) AS count
             FROM crm_lead
-            WHERE create_date BETWEEN '{start_of_week}' AND '{end_of_week}'
+            WHERE create_date BETWEEN '{start_str}' AND '{end_str}'
             {user_filter}
         """)
         crm_lead_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
 
-        # Total Opportunities (week)
+        # Opportunities (week)
         self._cr.execute(f"""
-            SELECT COUNT(id)
+            SELECT COUNT(id) AS count
             FROM crm_lead
             WHERE type = 'opportunity'
-            AND create_date BETWEEN '{start_of_week}' AND '{end_of_week}'
+              AND create_date BETWEEN '{start_str}' AND '{end_str}'
             {user_filter}
         """)
         opportunity_value = int((self._cr.dictfetchone() or {'count': 0})['count'])
 
-        # Expected Revenue
+        # Expected revenue (week)
         self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0)
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_rev
             FROM crm_lead
             WHERE type = 'opportunity' AND active = true
-            AND create_date BETWEEN '{start_of_week}' AND '{end_of_week}'
+              AND create_date BETWEEN '{start_str}' AND '{end_str}'
             {user_filter}
         """)
-        exp_revenue_value = float((self._cr.dictfetchone() or {'coalesce': 0})['coalesce'])
+        exp_revenue_value = float((self._cr.dictfetchone() or {'total_rev': 0})['total_rev'])
 
-        # Revenue Won
+        # Won revenue (by date_closed in week)
         self._cr.execute(f"""
-            SELECT COALESCE(SUM(expected_revenue), 0)
+            SELECT COALESCE(SUM(expected_revenue), 0) AS total_won
             FROM crm_lead
-            WHERE type = 'opportunity' AND stage_id = 4
-            AND date_closed BETWEEN '{start_of_week}' AND '{end_of_week}'
+            WHERE type = 'opportunity'
+              AND stage_id IN {won_stage_ids}
+              AND date_closed IS NOT NULL
+              AND date_closed BETWEEN '{start_str}' AND '{end_str}'
             {user_filter}
         """)
-        revenue_value = float((self._cr.dictfetchone() or {'coalesce': 0})['coalesce'])
+        revenue_value = float((self._cr.dictfetchone() or {'total_won': 0})['total_won'])
 
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
-        # Win & Lost Count
+        # Win & Lost counts (by date_closed in week)
         self._cr.execute(f"""
             SELECT
-                SUM(CASE WHEN probability = 100 AND active = true
-                    AND date_closed BETWEEN '{start_of_week}' AND '{end_of_week}'
-                    THEN 1 ELSE 0 END) AS won_count,
-
-                SUM(CASE WHEN probability = 0 AND active = false
-                    AND create_date BETWEEN '{start_of_week}' AND '{end_of_week}'
-                    THEN 1 ELSE 0 END) AS lost_count
-
+                SUM(CASE WHEN stage_id IN {won_stage_ids} AND date_closed IS NOT NULL
+                    AND date_closed BETWEEN '{start_str}' AND '{end_str}' THEN 1 ELSE 0 END) AS won_count,
+                SUM(CASE WHEN stage_id IN {lost_stage_ids} AND date_closed IS NOT NULL
+                    AND date_closed BETWEEN '{start_str}' AND '{end_str}' THEN 1 ELSE 0 END) AS lost_count
             FROM crm_lead
             WHERE type = 'opportunity'
             {user_filter}
@@ -1262,24 +1402,36 @@ class CRMLead(models.Model):
         total_won = int(opp.get('won_count') or 0)
         total_lost = int(opp.get('lost_count') or 0)
         total_compared = total_won + total_lost
+        win_ratio_value = round((total_won / total_compared) * 100, 2) if total_compared else 0.0
+        lost_ratio_value = 100 - win_ratio_value if total_compared else 0.0
 
-        if total_compared:
-            win_ratio_value = round((total_won / total_compared) * 100, 2)
-            lost_ratio_value = 100 - win_ratio_value
-        else:
-            win_ratio_value = 0.0
-            lost_ratio_value = 0.0
+        # Follow Up Do (week) - by create_date
+        try:
+            self._cr.execute(f"""
+                SELECT COUNT(id) AS cnt
+                FROM crm_lead
+                WHERE type = 'opportunity'
+                  AND active = true
+                  AND create_date BETWEEN '{start_str}' AND '{end_str}'
+                  AND stage_id NOT IN ({new_stage_id})
+                  AND stage_id NOT IN {won_stage_ids}
+                  AND stage_id NOT IN {lost_stage_ids}
+                {user_filter}
+            """)
+            follow_up_do = int((self._cr.dictfetchone() or {'cnt': 0})['cnt'])
+        except Exception:
+            follow_up_do = 0
 
-        # Average Close Time
+        # Avg close time (week)
         self._cr.execute(f"""
-            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date)))
+            SELECT AVG(EXTRACT(EPOCH FROM (date_conversion - create_date))) AS avg_sec
             FROM crm_lead
             WHERE date_conversion IS NOT NULL
-            AND date_conversion BETWEEN '{start_of_week}' AND '{end_of_week}'
+              AND date_conversion BETWEEN '{start_str}' AND '{end_str}'
             {user_filter}
         """)
-        avg_seconds = float((self._cr.dictfetchone() or {'avg': 0})['avg'] or 0)
-        record_avg_time = int(round(avg_seconds)) if avg_seconds > 0 else 0
+        avg_seconds = float((self._cr.dictfetchone() or {'avg_sec': 0})['avg_sec'] or 0)
+        record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         return {
             'record': crm_lead_value,
@@ -1290,5 +1442,5 @@ class CRMLead(models.Model):
             'opportunity_ratio_value': win_ratio_value,
             'lost_ratio': lost_ratio_value,
             'avg_time': record_avg_time,
+            'follow_up_do': follow_up_do,
         }
-

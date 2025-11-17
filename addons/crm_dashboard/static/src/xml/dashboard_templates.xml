@@ -183,11 +183,18 @@
                             <i class="fa fa-tasks text-mauve"></i>
                         </div>
                         <div class="dashboard-card__details">
-                            <h3><span id="custom_kpi_followup"></span></h3>
+                            <h3>
+                                <span id="custom_kpi_followup"></span>
+                                <span id="followup_this_year" style="display:none;"></span>
+                                <span id="followup_this_quarter" style="display:none;"></span>
+                                <span id="followup_this_month" style="display:none;"></span>
+                                <span id="followup_this_week" style="display:none;"></span>
+                            </h3>
                             <h4>Follow Up Do</h4>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- 8. Average Closing Time -->
                 <div class="col-sm-6 col-md-2">
