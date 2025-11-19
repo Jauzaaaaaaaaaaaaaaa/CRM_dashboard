@@ -1,0 +1,26 @@
+[33mc5c4d4c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Pembuatan fitur follow up do, dan melakukan perbaikan tampilan pada persen dan nilai mata uang
+[33m9df0163[m Perbaikan perhitungan team leads dan team opportunities
+[33me0c654c[m Perbaikan untuk top salesperson by invoce
+[33ma0a1c6f[m Perbaikan tampilan
+[33m5ad9fc7[m Priority
+[33m93eb9cc[m update dashboard template
+[33mcdf8788[m Hapus kode js
+[33m38808dc[m Komen beberapa fitur
+[33m2d932cd[m perbaikan tampilan sesuai kpi cards
+[33m76a5f8a[m Perbaikan tampilan
+[33m0eb0a8c[m Active Leads
+[33m232f1d0[m Add JS library folder for CRM Dashboard
+[33mbecb1fa[m Track lib folder for CRM Dashboard
+[33m3766ff2[m Add new crm_dashboard
+[33m493c646[m update manifest
+[33m92d1a36[m Perbaikan fitur lost ratio sekarang sudah dapat digunakan
+[33m7a6daa3[m index on main: bb46946 Menamperbaiki fitur perhitungan Win Ratio dan Total Revenue
+[33mbb46946[m Menamperbaiki fitur perhitungan Win Ratio dan Total Revenue
+[33mbf9eb64[m add notification
+[33ma514fe3[m Add new crm_ext module
+[33m5027cd6[m Backdate Assets
+[33mf543855[m folder lib
+[33m22709a5[m Update color and delete models
+[33me77ee6e[m membuat leads lost di stage lost
+[33m8d35e53[m membuat won vs lost
+[33m11d97a7[m push CRM dashboard
