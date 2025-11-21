@@ -1,38 +1,111 @@
-/* Bikin card dashboard lebih kecil dan rapat */
+/* ===========================================================
+   ⭐ KPI ROW — Gutter persis seperti baris 2 (Bootstrap row)
+   =========================================================== */
+
+.kpi-row {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+
+    /* Bootstrap row behavior */
+    margin-left: -15px !important;
+    margin-right: -15px !important;
+
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+
+    column-gap: 30px !important;  /* jarak antar kolom seperti baris 2 */
+    row-gap: 0 !important;
+
+    margin-bottom: 15px !important;
+}
+
+/* Kolom KPI (meniru .col-*) */
+.kpi-col {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    display: flex;
+}
+
+/* Width custom kolom */
+.kpi-1-5 { flex: 0 0 12.5%; }      /* 1.5 kolom */
+.kpi-2   { flex: 0 0 16.666%; }    /* 2 kolom */
+.kpi-3   { flex: 0 0 25%; }        /* 3 kolom */
+
+.kpi-col .dashboard-card {
+    width: 100%;
+}
+
+
+
+/* ===========================================================
+   ⭐ ORIGINAL CSS MU — tetap aman
+   =========================================================== */
+
 .o_crm_dashboard .o_dashboards .o_dashboard_item {
     flex: 1 1 200px !important;
     max-width: 220px !important;
-    margin: 8px !important;
+    margin: 2px !important;      /* dipersempit */
 }
 
-/* Rapikan judul chart */
 .o_crm_dashboard .o_dashboard_graph h2 {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 6px;
 }
 
-/* Kasih jarak antar section */
 .o_crm_dashboard .o_dashboard_graph {
-    padding: 12px;
+    padding: 8px;
 }
 
-/* Force scroll aktif */
 html, body, .o_web_client, .o_action_manager, .o_content {
     overflow-y: auto !important;
     overflow-x: hidden !important;
     height: auto !important;
 }
 
-/* Pastikan tidak ada overlay */
 .o_loading, .o_spinner, .o_block_ui, .modal-backdrop {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
 }
 
-/* Kadang dashboard pakai posisi absolute tinggi tetap */
 .o_content {
     position: relative !important;
     min-height: 100vh !important;
+}
+
+
+
+/* ===========================================================
+   ⭐ BEAUTY BOOST (Final Touch)
+   =========================================================== */
+
+.dashboard-card {
+    border-radius: 12px !important;
+    padding: 8px !important;
+    margin: 0 !important;
+}
+
+/* 🔵 ICON BULAT */
+.dashboard-card__icon-container {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;     /* dari kotak → bulat */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dashboard-card__details h3 span div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Revenue bebas overflow */
+.big_card .dashboard-card__details h3 span div {
+    overflow: visible !important;
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 700;
 }

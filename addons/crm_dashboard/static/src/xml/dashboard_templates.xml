@@ -57,9 +57,9 @@
     <t t-name="Managercrm">
         <section class="dashboard_main_section" id="main_section_manager">
             <div class="crm_dash_cards row">
-                <!-- 1. Team Opportunities -->
-                <div class="col-sm-6 col-md-2">
-                    <div class="dashboard-card card-shadow opportunity" t-on-click="(e) => this.opportunity(e)">
+                <!-- 1. Team Opportunities — 2 kolom -->
+                <div class="kpi-col kpi-2">
+                    <div class="dashboard-card card-shadow opportunity">
                         <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
                             <i class="fa fa-trophy text-mauve"></i>
                         </div>
@@ -77,8 +77,61 @@
                     </div>
                 </div>
 
-                <!-- 2. Win Ratio -->
-                <div class="col-sm-6 col-md-2">
+                <!-- 2. Team Leads — 2 kolom -->
+                <div class="kpi-col kpi-2">
+                    <div class="dashboard-card card-shadow my_lead">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-line-chart text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="leads_this_year"></div>
+                                    <div id="leads_this_quarter"></div>
+                                    <div id="leads_this_month"></div>
+                                    <div id="leads_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Team Leads</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Active Leads — 2 kolom -->
+                <div class="kpi-col kpi-2">
+                    <div class="dashboard-card card-shadow active_leads_card">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-bolt text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3><span id="active_leads">0</span></h3>
+                            <h4>Active Leads</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Total Revenue — 3 kolom -->
+                <div class="kpi-col kpi-3">
+                    <div class="dashboard-card card-shadow revenue_card big_card">
+                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                            <i class="fa fa-usd text-mauve"></i>
+                        </div>
+                        <div class="dashboard-card__details">
+                            <h3>
+                                <span>
+                                    <div id="rev_this_year"></div>
+                                    <div id="rev_this_quarter"></div>
+                                    <div id="rev_this_month"></div>
+                                    <div id="rev_this_week"></div>
+                                </span>
+                            </h3>
+                            <h4>Total Revenue</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Win Ratio — 1.5 kolom -->
+                <div class="kpi-col kpi-1-5">
                     <div class="dashboard-card card-shadow opportunity_ratio">
                         <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
                             <i class="fa fa-percent text-mauve"></i>
@@ -97,8 +150,8 @@
                     </div>
                 </div>
 
-                <!-- 3. Lost Ratio -->
-                <div class="col-sm-6 col-md-2">
+                <!-- 6. Lost Ratio — 1.5 kolom -->
+                <div class="kpi-col kpi-1-5">
                     <div class="dashboard-card card-shadow lost_ratio">
                         <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
                             <i class="fa fa-percent text-mauve"></i>
@@ -117,60 +170,7 @@
                     </div>
                 </div>
 
-                <!-- 4. Total Revenue -->
-                <div class="col-sm-6 col-md-2">
-                    <div class="dashboard-card card-shadow revenue_card w-100" t-on-click="(e) => this.revenue_card(e)">
-                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                            <i class="fa fa-usd text-mauve"></i>
-                        </div>
-                        <div class="dashboard-card__details">
-                            <h3>
-                                <span>
-                                    <div id="rev_this_year"></div>
-                                    <div id="rev_this_quarter"></div>
-                                    <div id="rev_this_month"></div>
-                                    <div id="rev_this_week"></div>
-                                </span>
-                            </h3>
-                            <h4>Total Revenue</h4>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- 5. Team Leads -->
-                <div class="col-sm-6 col-md-2">
-                    <div class="dashboard-card card-shadow my_lead" t-on-click="(e) => this.my_lead(e)">
-                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                            <i class="fa fa-line-chart text-mauve"></i>
-                        </div>
-                        <div class="dashboard-card__details">
-                            <h3>
-                                <span>
-                                    <div id="leads_this_year"></div>
-                                    <div id="leads_this_quarter"></div>
-                                    <div id="leads_this_month"></div>
-                                    <div id="leads_this_week"></div>
-                                </span>
-                            </h3>
-                            <h4>Team Leads</h4>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Active Leads -->
-                <div class="col-sm-6 col-md-2">
-                    <div class="dashboard-card card-shadow active_leads_card">
-                        <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
-                            <i class="fa fa-bolt text-mauve"></i>
-                        </div>
-                        <div class="dashboard-card__details">
-                            <h3>
-                                <span id="active_leads">0</span>
-                            </h3>
-                            <h4>Active Leads</h4>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- ===== ROW 2 ===== -->
