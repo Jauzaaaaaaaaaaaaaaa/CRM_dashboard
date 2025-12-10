@@ -38,6 +38,44 @@ class CRMLead(models.Model):
     achievement_amount = fields.Float(string="Monthly Achievement",
                                       help="Achievement for the month")
 
+    # ============================
+    # ✅ ACTIVITY REPORT TOTAL 
+    # ============================
+    def get_activity_report_total(self):
+        self.env.cr.execute("""
+            SELECT mat.name, COUNT(*)
+            FROM mail_activity ma
+            LEFT JOIN mail_activity_type mat ON ma.activity_type_id = mat.id
+            WHERE ma.res_model = 'crm.lead'
+            GROUP BY mat.name
+            ORDER BY COUNT(*) DESC
+        """)
+        
+        rows = self.env.cr.fetchall()
+
+        labels = []
+        values = []
+
+        for r in rows:
+            raw_name = r[0]
+
+            # ✅ FIX UTAMA DI SINI — HANDLE DICT TRANSLATION
+            if isinstance(raw_name, dict):
+                name = raw_name.get('en_US') or list(raw_name.values())[0]
+            elif isinstance(raw_name, str):
+                name = raw_name
+            else:
+                name = "Others"
+
+            labels.append(name)
+            values.append(r[1])
+
+        return {
+            "labels": labels,
+            "values": values,
+        }
+
+
     def _parse_rpc_kwargs(self, arg):
         """
         Helper aman untuk parse kwargs dari panggilan JSON-RPC Odoo.

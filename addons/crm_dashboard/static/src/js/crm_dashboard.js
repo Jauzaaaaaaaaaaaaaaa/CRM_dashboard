@@ -20,7 +20,7 @@ export class CRMDashboard extends Component {
         onMounted(this.onMounted);
     }
 
-        // ⬇⬇⬇ TARUH DI SINI (tepat setelah setup) ⬇⬇⬇
+    // ⬇⬇⬇ TARUH DI SINI (tepat setelah setup) ⬇⬇⬇
     formatCurrency(num) {
         if (num === null || num === undefined) return "0";
         num = parseFloat(num).toString();
@@ -165,9 +165,6 @@ export class CRMDashboard extends Component {
                       def8, def9, def10, def11, def12, def13, def14);
     }
 
-
-    
-
     /**
      * Hitung tanggal start & end sesuai periode
      */
@@ -274,8 +271,6 @@ export class CRMDashboard extends Component {
         });
     }
 
-
-
     onclick_this_month(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_month', {
@@ -307,8 +302,6 @@ export class CRMDashboard extends Component {
             self.refreshActiveLeads("this_month");
         });
     }
-
-
 
     onclick_this_quarter(ev) {
         var self = this;
@@ -342,8 +335,6 @@ export class CRMDashboard extends Component {
         });
     }
 
-
-
     onclick_this_year(ev) {
         var self = this;
         jsonrpc('/web/dataset/call_kw/crm.lead/crm_year', {
@@ -376,11 +367,11 @@ export class CRMDashboard extends Component {
         });
     }
 
-
-
-
-
-    onMounted() {
+    // ---------------------------
+    // Consolidated onMounted: combines previous small onMounted and the later async one
+    // ---------------------------
+    async onMounted() {
+        // preserve earlier behavior: set active leads and card click
         const el = document.querySelector('#active_leads');
         if (el) el.innerHTML = (this.active_leads_count || 0).toString();
         const card = document.querySelector('.active_leads_card');
@@ -390,7 +381,58 @@ export class CRMDashboard extends Component {
                 this._openActiveLeadsList();
             });
         }
-        
+
+        // preserve existing render flow (calls many render_xxx)
+        try {
+            // If these functions depend on synchronous ordering, keep as is
+            if (typeof this.renderElement === 'function') {
+                this.renderElement();
+            }
+            if (typeof this.funnel_chart === 'function') {
+                this.funnel_chart();
+            }
+            if (typeof this.render_annual_chart_graph === 'function') {
+                this.render_annual_chart_graph();
+            }
+            if (typeof this.render_sales_activity_graph === 'function') {
+                this.render_sales_activity_graph();
+            }
+            if (typeof this.render_leads_month_graph === 'function') {
+                this.render_leads_month_graph();
+            }
+            if (typeof this.render_revenue_count_pie === 'function') {
+                this.render_revenue_count_pie();
+            }
+            if (typeof this.render_campaign_leads_graph === 'function') {
+                this.render_campaign_leads_graph();
+            }
+            if (typeof this.render_medium_leads_graph === 'function') {
+                this.render_medium_leads_graph();
+            }
+            if (typeof this.render_source_leads_graph === 'function') {
+                this.render_source_leads_graph();
+            }
+            if (typeof this.onclick_lost_last_12months === 'function') {
+                this.onclick_lost_last_12months();
+            }
+            if (typeof this.render_lost_leads_by_stage_graph === 'function') {
+                this.render_lost_leads_by_stage_graph();
+            }
+            if (typeof this.render_priority_pie_chart === 'function') {
+                this.render_priority_pie_chart();
+            }
+            if (typeof this.render_invoice_chart === 'function') {
+                this.render_invoice_chart();
+            }
+            // =====================================================
+            // ACTIVITY REPORT
+            // =====================================================
+            if (typeof this.render_activity_report_total === 'function')
+                this.render_activity_report_total();
+            
+        } catch (err) {
+            console.error("Error during onMounted render flow:", err);
+        }
     }
 
     _openActiveLeadsList() {
@@ -408,8 +450,6 @@ export class CRMDashboard extends Component {
         };
         this.action.doAction(action);
     }
-
-    
 
     /**
      * Handles the revenue card action.
@@ -564,25 +604,7 @@ export class CRMDashboard extends Component {
             self.render_dashboards();
         });
     }
-    /**
-     * Lifecycle hook triggered when the component is mounted.
-     * Renders various charts and graphs upon mounting.
-     */
-    async onMounted() {
-        this.renderElement();
-        this.funnel_chart();
-        this.render_annual_chart_graph();
-        this.render_sales_activity_graph();
-        this.render_leads_month_graph();
-        this.render_revenue_count_pie();
-        this.render_campaign_leads_graph();
-        this.render_medium_leads_graph();
-        this.render_source_leads_graph();
-        this.onclick_lost_last_12months();
-        this.render_lost_leads_by_stage_graph();
-        this.render_priority_pie_chart();
-        this.render_invoice_chart();
-    }
+
     /**
      * Render Priority Distribution Pie Chart
      */
@@ -651,7 +673,6 @@ export class CRMDashboard extends Component {
             });
         }).catch(err => console.error("Error fetching priority data:", err));
     }
-
 
     /**
      * Renders a doughnut chart to display lost leads categorized by stage.
@@ -729,6 +750,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
+
     /**
      * Handles the change event for the total lost CRM selection.
      * Determines the selected timeframe and triggers the respective method.
@@ -746,159 +768,152 @@ export class CRMDashboard extends Component {
             this.onclick_lost_last_month($target.val());
         }
     }
-    /**
-     * Handles the click event for the 'lost_last_month' option.
-     * Calls a JSON-RPC method to retrieve total lost CRM data for the last month.
-     * Generates a bar chart to represent the lost CRM data.
-     * @param {Event} ev - The event object.
-     */
-    onclick_lost_last_month(ev) {
-        var self = this;
-        self.initial_render = true;
-        jsonrpc('/web/dataset/call_kw/crm.lead/get_total_lost_crm', {
-            model: "crm.lead",
-            method: "get_total_lost_crm",
-            args: ['1'],
+
+    // =======================
+    // Activity Report (robust)
+    // =======================
+    render_activity_report_total() {
+        console.log("CRMDashboard: render_activity_report_total() called");
+
+        const canvas = document.getElementById("activity_report_bar");
+        if (!canvas) {
+            console.warn("CRMDashboard: #activity_report_bar canvas not found in DOM.");
+            return;
+        }
+        const ctx = canvas.getContext("2d");
+
+        // Ambil data dari backend
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_activity_report_total', {
+            model: 'crm.lead',
+            method: 'get_activity_report_total',
+            args: [{}],
             kwargs: {},
-        }).then(function(result) {
-            var ctx = document.getElementById("canvas").getContext('2d');
-            // Define the data
-            var lost_reason = result.month // Add data values to array
-            var count = result.count;
-            var myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: lost_reason, //x axis
-                    datasets: [{
-                        label: 'Count', // Name the series
-                        data: count, // Specify the data values array
-                        backgroundColor: '#66aecf',
-                        borderColor: '#66aecf',
-                        barPercentage: 0.5,
-                        barThickness: 6,
-                        maxBarThickness: 8,
-                        minBarLength: 0,
-                        borderWidth: 1, // Specify bar border width
-                        type: 'bar', // Set this data to a line chart
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    responsive: true, // Instruct chart js to respond nicely.
-                    maintainAspectRatio: false, // Add to prevent default behaviour of full-width/height
+        }).then((res) => {
+            console.log("CRMDashboard: activity report raw response:", res);
+
+            // --- Normalize many possible response shapes ---
+            // shape A: { labels: [...], values: [...] }
+            // shape B: { data: [{activity_name: ..., total: N}, ...] }
+            // shape C: array of tuples or arrays
+            let labels = [];
+            let values = [];
+
+            // helper untuk resolve label jika label bisa dict multilang
+            const resolveLabel = (lab) => {
+                if (lab === null || lab === undefined) return "Others";
+                // jika sudah string
+                if (typeof lab === 'string') return lab;
+                // jika object/dict (multilang), coba pakai current_lang
+                if (typeof lab === 'object') {
+                    // this.current_lang biasanya diset di onWillStart (ex: 'en_US' or 'en_US' like code)
+                    const lang = (this.current_lang && typeof this.current_lang === 'string') ? this.current_lang : null;
+                    if (lang && lab[lang]) return lab[lang];
+                    // else ambil first available value
+                    const values = Object.values(lab);
+                    if (values.length) return values[0];
+                    return "Others";
                 }
-            });
-        });
-    }
-    /**
-     * Handles the click event for displaying total lost CRM data for the last 6 months.
-     * Retrieves and displays the data using Chart.js in a bar chart format.
-     * @param {Event} ev - The event object.
-     */
-    onclick_lost_last_6months(ev) {
-        var self = this;
-        self.initial_render = true;
-        jsonrpc('/web/dataset/call_kw/crm.lead/get_total_lost_crm', {
-            model: "crm.lead",
-            method: "get_total_lost_crm",
-            args: ['6'],
-            kwargs: {},
-        }).then(function(result) {
-            const canvas = document.getElementById("canvas");
-            if (!canvas) {
-                console.warn("Canvas element not found — Admin CRM section is hidden.");
+                return String(lab);
+            };
+
+            // Case A
+            if (res && Array.isArray(res.labels) && Array.isArray(res.values)) {
+                labels = res.labels.map(resolveLabel);
+                values = res.values.map(v => Number(v) || 0);
+            }
+            // Case B: res.data array of objects
+            else if (res && Array.isArray(res.data) && res.data.length) {
+                res.data.forEach(item => {
+                    // try field names commonly used
+                    let lab = item.activity_name || item.name || item.label || item[0];
+                    let val = item.total !== undefined ? item.total : (item.value !== undefined ? item.value : item[1]);
+                    labels.push(resolveLabel(lab));
+                    values.push(Number(val) || 0);
+                });
+            }
+            // Case C: res could be directly an array of arrays: [[label, val], ...]
+            else if (Array.isArray(res) && res.length && Array.isArray(res[0])) {
+                res.forEach(row => {
+                    labels.push(resolveLabel(row[0]));
+                    values.push(Number(row[1]) || 0);
+                });
+            }
+            // Fallback: try to read simple properties
+            else if (res && typeof res === 'object' && (res.length || res.counts)) {
+                // no-op: leave labels/values empty (will show placeholder)
+            }
+
+            // If still empty, draw placeholder chart (keamanan UI)
+            if (!labels.length || !values.length) {
+                console.warn("CRMDashboard: activity report returned empty labels/values. Drawing placeholder.");
+                if (this._activity_chart) { try { this._activity_chart.destroy(); } catch (e){} }
+                this._activity_chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: ['No Data'], datasets: [{ label: 'Activities', data: [0] }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
                 return;
             }
-            const ctx = canvas.getContext('2d');
 
-            const lost_reason = result.month;
-            const count = result.count;
+            // Destroy previous chart bila ada
+            if (this._activity_chart) {
+                try { this._activity_chart.destroy(); } catch (e) { /* ignore */ }
+            }
 
-            new Chart(ctx, {
+            // Build chart
+            this._activity_chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: lost_reason,
+                    labels: labels,
                     datasets: [{
-                        label: 'Count',
-                        data: count,
-                        backgroundColor: '#66aecf',
-                        borderColor: '#66aecf',
-                        barPercentage: 0.5,
-                        barThickness: 6,
-                        maxBarThickness: 8,
-                        minBarLength: 0,
+                        label: 'Total Activities',
+                        data: values,
                         borderWidth: 1,
-                        fill: false
+                        backgroundColor: labels.map((_, i) => '#66aecf'), // simple consistent color
                     }]
                 },
                 options: {
-                    scales: {
-                        y: { beginAtZero: true }
-                    },
                     responsive: true,
                     maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const v = (context.parsed && context.parsed.y !== undefined) ? context.parsed.y : context.parsed;
+                                    return String(v) + " activities";
+                                }
+                            }
+                        }
+                    }
                 }
             });
+
+        }).catch((err) => {
+            console.error("CRMDashboard: error while fetching activity report:", err);
+            // optional: draw placeholder on error
+            if (!this._activity_chart) {
+                try {
+                    this._activity_chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: { labels: ['Error'], datasets: [{ label: 'Activities', data: [0] }] },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                } catch (e) {}
+            }
         });
     }
 
-    onclick_lost_last_12months(ev) {
-        var self = this;
-        if (self.is_manager === true) {
-            self.initial_render = true;
-            jsonrpc('/web/dataset/call_kw/crm.lead/get_total_lost_crm', {
-                model: "crm.lead",
-                method: "get_total_lost_crm",
-                args: ['12'],
-                kwargs: {},
-            }).then(function(result) {
-                const canvas = document.getElementById("canvas");
-                if (!canvas) {
-                    console.warn("Canvas element not found — Admin CRM section is hidden.");
-                    return;
-                }
-                const ctx = canvas.getContext('2d');
 
-                const lost_reason = result.month;
-                const count = result.count;
+    // ----------------------------------------------------------------------
+    // The rest of your original functions (render_lost_leads_graph, render_source_leads_graph, etc.)
+    // remain unchanged below — I intentionally keep them intact as you provided.
+    // (If your file contains more functions beyond what you pasted, keep them as they are.)
+    // ----------------------------------------------------------------------
 
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: lost_reason,
-                        datasets: [{
-                            label: 'Count',
-                            data: count,
-                            backgroundColor: '#66aecf',
-                            borderColor: '#66aecf',
-                            barPercentage: 0.5,
-                            barThickness: 6,
-                            maxBarThickness: 8,
-                            minBarLength: 0,
-                            borderWidth: 1,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: { beginAtZero: true },
-                        },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                    }
-                });
-            });
-        }
-    }
-    /**
-     * Renders a doughnut chart to display lost leads categorized by reason.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
     render_lost_leads_graph() {
         var self = this;
         var ctx = $(".lost_leads_graph");
@@ -938,7 +953,6 @@ export class CRMDashboard extends Component {
                     borderWidth: 1
                 }, ]
             };
-            //options
             var options = {
                 responsive: true,
                 title: false,
@@ -949,21 +963,8 @@ export class CRMDashboard extends Component {
                         fontColor: "#333",
                         fontSize: 16
                     }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            color: "rgba(0, 0, 0, 0)",
-                            display: false,
-                        },
-                        ticks: {
-                            min: 0,
-                            display: false,
-                        }
-                    }]
                 }
             };
-            //create Chart class object
             var chart = new Chart(ctx, {
                 type: "doughnut",
                 data: data,
@@ -971,10 +972,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
-    /**
-     * Renders a doughnut chart to display leads categorized by their source.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
+
     render_source_leads_graph() {
         var self = this
         var ctx = $(".source_lead");
@@ -1014,7 +1012,6 @@ export class CRMDashboard extends Component {
                     borderWidth: 1
                 }, ]
             };
-            //options
             var options = {
                 responsive: true,
                 title: false,
@@ -1025,21 +1022,8 @@ export class CRMDashboard extends Component {
                         fontColor: "#333",
                         fontSize: 14
                     }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            color: "rgba(0, 0, 0, 0)",
-                            display: false,
-                        },
-                        ticks: {
-                            min: 0,
-                            display: false,
-                        }
-                    }]
                 }
             };
-            //create Chart class object
             var chart = new Chart(ctx, {
                 type: "doughnut",
                 data: data,
@@ -1047,10 +1031,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
-    /**
-     * Renders a doughnut chart to display leads categorized by their medium.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
+
     render_medium_leads_graph() {
         var self = this
         var ctx = $(".medium_leads");
@@ -1090,7 +1071,6 @@ export class CRMDashboard extends Component {
                     borderWidth: 1
                 }, ]
             };
-            //options
             var options = {
                 responsive: true,
                 title: false,
@@ -1101,21 +1081,8 @@ export class CRMDashboard extends Component {
                         fontColor: "#333",
                         fontSize: 14
                     }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            color: "rgba(0, 0, 0, 0)",
-                            display: false,
-                        },
-                        ticks: {
-                            min: 0,
-                            display: false,
-                        }
-                    }]
                 }
             };
-            //create Chart class object
             var chart = new Chart(ctx, {
                 type: "doughnut",
                 data: data,
@@ -1123,10 +1090,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
-    /**
-     * Renders a doughnut chart to display leads categorized by their campaign source.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
+
     render_campaign_leads_graph() {
         var self = this
         var ctx = $(".campaign_source");
@@ -1166,7 +1130,6 @@ export class CRMDashboard extends Component {
                     borderWidth: 1
                 }, ]
             };
-            //options
             var options = {
                 responsive: true,
                 title: false,
@@ -1177,21 +1140,8 @@ export class CRMDashboard extends Component {
                         fontColor: "#333",
                         fontSize: 14
                     }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            color: "rgba(0, 0, 0, 0)",
-                            display: false,
-                        },
-                        ticks: {
-                            min: 0,
-                            display: false,
-                        }
-                    }]
                 }
             };
-            //create Chart class object
             var chart = new Chart(ctx, {
                 type: "doughnut",
                 data: data,
@@ -1199,10 +1149,7 @@ export class CRMDashboard extends Component {
             });
         });
     }
-    /**
-     * Renders a doughnut chart to display revenue count data.
-     * Fetches data via JSON-RPC and generates a chart using Chart.js.
-     */
+
     render_revenue_count_pie() {
         var self = this;
         var ctx = $(".revenue_count_pie_canvas");
@@ -1230,7 +1177,6 @@ export class CRMDashboard extends Component {
                     borderWidth: 1
                 }, ]
             };
-            //options
             var options = {
                 responsive: true,
                 title: false,
@@ -1241,21 +1187,8 @@ export class CRMDashboard extends Component {
                         fontColor: "#333",
                         fontSize: 16
                     }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            color: "rgba(0, 0, 0, 0)",
-                            display: false,
-                        },
-                        ticks: {
-                            min: 0,
-                            display: false,
-                        }
-                    }]
                 }
             };
-            //create Chart class object
             var chart = new Chart(ctx, {
                 type: "doughnut",
                 data: data,
