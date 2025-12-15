@@ -341,6 +341,47 @@
                         </div>
                     </div>
                 </div>
+
+
+                <!-- ================================================= -->
+                <!-- SOURCE OF LEADS - FIXED CHART SIZE (CARD SAME) -->
+                <!-- ================================================= -->
+                <div class="col-sm-12 col-md-6">
+                    <div class="chart-container card-shadow half_chart p-4"
+                        style="height:440px;">  <!-- ⬅ CARD TETAP -->
+
+                        <h2>Source of Leads</h2>
+                        <hr/>
+
+                        <!-- Chart Wrapper (DIKECILKAN) -->
+                        <div class="graph_canvas d-flex justify-content-center align-items-center"
+                            style="height:320px;">  <!-- ⬅ CHART LEBIH KECIL -->
+
+                            <!-- Canvas -->
+                            <canvas id="source_of_leads_chart"
+                                    style="max-height:320px; width:100%;"></canvas>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Custom Card 2 -->
+                <div class="col-sm-12 col-md-6">
+            
+                    <div class="chart-container card-shadow half_chart p-4" style="height:440px;">
+                        <h2>Custom Card 2</h2>
+                        <hr/>
+                        <div class="graph_canvas d-flex justify-content-center align-items-center"
+                            style="height:370px;">
+
+                            <!-- KOSONG – isi bebas nanti -->
+
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- <div class="year_to_date_graph_div col-sm-12 col-md-4">
                     <div class="chart-container card-shadow">
                         <h2>Year to Date</h2>

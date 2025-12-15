@@ -198,6 +198,101 @@ export class CRMDashboard extends Component {
         };
     }
 
+    // ===================================
+    // SOURCE OF LEADS (FINAL VISUAL STYLE)
+    // ===================================
+    render_source_of_leads_graph() {
+        const ctx = document.getElementById("source_of_leads_chart");
+        if (!ctx) return;
+
+        // 🎨 WARNA DISAMAKAN DENGAN CONTOH KANAN
+        const SOURCE_COLORS = {
+            "Exhibition/Event": "#f39c12",   // orange
+            "Inbound Marketing": "#2ecc71",  // green
+            "Email Marketing": "#f1c40f",    // yellow
+            "Cold Calling": "#3498db",       // blue
+            "Referral": "#1abc9c",           // cyan
+            "Partnership": "#e74c3c",        // red
+            "SiRUP": "#9b59b6",               // ungu (kalau ada)
+        };
+
+        const DEFAULT_COLOR = "#bdc3c7"; // abu-abu fallback
+
+        jsonrpc('/web/dataset/call_kw/crm.lead/get_source_of_leads', {
+            model: 'crm.lead',
+            method: 'get_source_of_leads',
+            args: [{}],
+            kwargs: {},
+        }).then(res => {
+            if (!res || !res.labels || !res.labels.length) return;
+
+            // mapping warna sesuai label
+            const backgroundColors = res.labels.map(label => {
+                return SOURCE_COLORS[label] || DEFAULT_COLOR;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: res.labels,
+                    datasets: [{
+                        label: 'Leads',
+                        data: res.values,
+                        backgroundColor: backgroundColors,
+                        borderRadius: 4,
+                        barThickness: 28,      // 🔽 BAR LEBIH KECIL
+                        maxBarThickness: 32,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 0,
+                            left: 5,
+                            right: 5,
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 14,
+                                boxHeight: 14,
+                                padding: 10,
+                            }
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: false,
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [4, 4]
+                            },
+                            ticks: {
+                                stepSize: 10
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+
     /**
      * Refresh Active Leads — bisa untuk periode tertentu
      */
@@ -429,6 +524,12 @@ export class CRMDashboard extends Component {
             // =====================================================
             if (typeof this.render_activity_report_total === 'function')
                 this.render_activity_report_total();
+            // =============================
+            // INIT SOURCE OF LEADS CHART
+            // =============================
+            if (typeof this.render_source_of_leads_graph === 'function') {
+                this.render_source_of_leads_graph();
+            }
             
         } catch (err) {
             console.error("Error during onMounted render flow:", err);

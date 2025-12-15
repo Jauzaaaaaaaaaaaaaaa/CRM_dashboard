@@ -154,6 +154,40 @@ class CRMLead(models.Model):
 
         return data
 
+    # ================================
+    # SOURCE OF LEADS (NEW & ISOLATED)
+    # ================================
+    @api.model
+    def get_source_of_leads(self, kwargs=None):
+        """
+        Source of Leads berdasarkan crm.lead.source
+        Aman, cepat, dan siap untuk chart
+        """
+        self.env.cr.execute("""
+            SELECT
+                cls.name AS source_name,
+                COUNT(cl.id) AS total
+            FROM crm_lead cl
+            LEFT JOIN crm_lead_source cls ON cl.source_id = cls.id
+            WHERE cl.source_id IS NOT NULL
+            GROUP BY cls.name
+            ORDER BY COUNT(cl.id) DESC
+        """)
+
+        rows = self.env.cr.fetchall()
+
+        labels = []
+        values = []
+
+        for row in rows:
+            labels.append(row[0])
+            values.append(row[1])
+
+        return {
+            'labels': labels,
+            'values': values,
+        }
+
     @api.model
     def get_top_deals(self, limit=10):
         """Top Deals by expected revenue"""
