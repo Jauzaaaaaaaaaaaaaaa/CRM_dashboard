@@ -222,21 +222,14 @@
                         <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
                             <i class="fa fa-envelope text-mauve"></i>
                         </div>
-
                         <div class="dashboard-card__details">
                             <h3>
-
-                                <!-- Default KPI (sembunyi agar tidak bentrok) -->
                                 <span id="custom_kpi_email" style="display:none;"></span>
-
-                                <!-- Values for each filter -->
                                 <span id="email_sent_this_year" style="display:none;"></span>
                                 <span id="email_sent_this_quarter" style="display:none;"></span>
                                 <span id="email_sent_this_month" style="display:none;"></span>
                                 <span id="email_sent_this_week" style="display:none;"></span>
-
                             </h3>
-
                             <h4>Emails Sent</h4>
                         </div>
                     </div>
@@ -286,8 +279,7 @@
 
             <div class="row mt-5">
                 <!-- Kiri Atas: Opportunities by Stage -->
-                <div class="col-sm-12 col-md-6">
-                
+                <div class="col-sm-12 col-md-6">            
                     <div class="bar_chart_div half_chart chart-container card-shadow" style="height:440px;">
                         <h2>Opportunities by Stage</h2>
                         <hr/>
@@ -310,8 +302,7 @@
                                     max-width: 310px;
                                     max-height: 310px;
                                     aspect-ratio: 1 / 1;
-                                    transform: scale(1.05);
-                                ">
+                                    transform: scale(1.05);">
                             </canvas>
                         </div>
                     </div>
@@ -348,19 +339,13 @@
                 <!-- ================================================= -->
                 <div class="col-sm-12 col-md-6">
                     <div class="chart-container card-shadow half_chart p-4"
-                        style="height:440px;">  <!-- ⬅ CARD TETAP -->
-
+                        style="height:440px;">  
                         <h2>Source of Leads</h2>
                         <hr/>
-
-                        <!-- Chart Wrapper (DIKECILKAN) -->
                         <div class="graph_canvas d-flex justify-content-center align-items-center"
-                            style="height:320px;">  <!-- ⬅ CHART LEBIH KECIL -->
-
-                            <!-- Canvas -->
+                            style="height:320px;"> 
                             <canvas id="source_of_leads_chart"
                                     style="max-height:320px; width:100%;"></canvas>
-
                         </div>
                     </div>
                 </div>

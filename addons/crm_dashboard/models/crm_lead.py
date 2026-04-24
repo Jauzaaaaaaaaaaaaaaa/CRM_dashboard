@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -39,7 +39,7 @@ class CRMLead(models.Model):
                                       help="Achievement for the month")
 
     # ============================
-    # ✅ ACTIVITY REPORT TOTAL 
+    # âœ… ACTIVITY REPORT TOTAL 
     # ============================
     def get_activity_report_total(self):
         self.env.cr.execute("""
@@ -59,7 +59,7 @@ class CRMLead(models.Model):
         for r in rows:
             raw_name = r[0]
 
-            # ✅ FIX UTAMA DI SINI — HANDLE DICT TRANSLATION
+            # âœ… FIX UTAMA DI SINI â€” HANDLE DICT TRANSLATION
             if isinstance(raw_name, dict):
                 name = raw_name.get('en_US') or list(raw_name.values())[0]
             elif isinstance(raw_name, str):
@@ -190,7 +190,7 @@ class CRMLead(models.Model):
 
     @api.model
     def get_top_deals(self, limit=10):
-        """Top Deals by expected revenue"""
+        """Top Deals by expeted revenue"""
         leads = self.search([
             ('type', '=', 'opportunity'),
             ('is_lost', '=', False),
@@ -1013,7 +1013,7 @@ class CRMLead(models.Model):
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
         # ================================================================
-        # 🔥 WIN & LOST RATIO (LOGIKA LAMA — option A)
+        # ðŸ”¥ WIN & LOST RATIO (LOGIKA LAMA â€” option A)
         # ================================================================
         self._cr.execute(f"""
             SELECT
@@ -1070,7 +1070,7 @@ class CRMLead(models.Model):
         record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         # ================================================================
-        # ⭐ EMAIL SENT (YEAR) — counting crm.lead with source 'Email Marketing'
+        # â­ EMAIL SENT (YEAR) â€” counting crm.lead with source 'Email Marketing'
         #    (using ORM search_count for robustness)
         # ================================================================
         try:
@@ -1096,14 +1096,14 @@ class CRMLead(models.Model):
             'avg_time': record_avg_time,
             'follow_up_do': follow_up_do,
 
-            # 🔥 KPI BARU
+            # ðŸ”¥ KPI BARU
             'email_sent_year': email_sent_year,
         }
 
 
     @api.model
     def crm_quarter(self, kwargs):
-        """Quarterly CRM KPIs (corrected win/lost ratio – Option A)."""
+        """Quarterly CRM KPIs (corrected win/lost ratio â€“ Option A)."""
 
         if isinstance(kwargs, (list, tuple)) and len(kwargs) and isinstance(kwargs[0], dict):
             kwargs = kwargs[0]
@@ -1239,7 +1239,7 @@ class CRMLead(models.Model):
         record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         # ================================================================
-        # ⭐ EMAIL SENT (QUARTER) — counting crm.lead with source 'Email Marketing'
+        # â­ EMAIL SENT (QUARTER) â€” counting crm.lead with source 'Email Marketing'
         # ================================================================
         try:
             email_sent_quarter = self.env['crm.lead'].search_count([
@@ -1261,7 +1261,7 @@ class CRMLead(models.Model):
             'avg_time': record_avg_time,
             'follow_up_do': follow_up_do,
 
-            # 🔥 KPI BARU
+            # ðŸ”¥ KPI BARU
             'email_sent_quarter': email_sent_quarter,
         }
 
@@ -1355,7 +1355,7 @@ class CRMLead(models.Model):
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
         # ================================================================
-        # 🔥 WIN & LOST RATIO — LOGIKA LAMA 100% ORIGINAL
+        # ðŸ”¥ WIN & LOST RATIO â€” LOGIKA LAMA 100% ORIGINAL
         # ================================================================
         self._cr.execute(f"""
             SELECT
@@ -1414,7 +1414,7 @@ class CRMLead(models.Model):
         record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         # ================================================================
-        # ⭐ EMAIL SENT (MONTH) — counting crm.lead with source 'Email Marketing'
+        # â­ EMAIL SENT (MONTH) â€” counting crm.lead with source 'Email Marketing'
         # ================================================================
         try:
             email_sent_month = self.env['crm.lead'].search_count([
@@ -1436,7 +1436,7 @@ class CRMLead(models.Model):
             'avg_time': record_avg_time,
             'follow_up_do': follow_up_do,
 
-            # 🔥 KPI BARU
+            # ðŸ”¥ KPI BARU
             'email_sent_month': email_sent_month,
         }
 
@@ -1481,7 +1481,7 @@ class CRMLead(models.Model):
         new_stage_id = 1  # New stage
 
         # ===============================
-        # RANGE MINGGU (Monday–Sunday)
+        # RANGE MINGGU (Mondayâ€“Sunday)
         # ===============================
         today = fields.Date.today()
         weekday = today.weekday()  # Monday=0 ... Sunday=6
@@ -1537,7 +1537,7 @@ class CRMLead(models.Model):
         ratio_value = round((revenue_value / exp_revenue_value) * 100, 2) if exp_revenue_value else 0.0
 
         # ================================================================
-        # 🔥 WIN & LOST RATIO — LOGIKA LAMA 100% ORIGINAL
+        # ðŸ”¥ WIN & LOST RATIO â€” LOGIKA LAMA 100% ORIGINAL
         # ================================================================
         self._cr.execute(f"""
             SELECT
@@ -1596,7 +1596,7 @@ class CRMLead(models.Model):
         record_avg_time = int(round(avg_seconds)) if avg_seconds else 0
 
         # ================================================================
-        # ⭐ EMAIL SENT (WEEK) — counting crm.lead with source 'Email Marketing'
+        # â­ EMAIL SENT (WEEK) â€” counting crm.lead with source 'Email Marketing'
         # ================================================================
         try:
             email_sent_week = self.env['crm.lead'].search_count([
@@ -1618,6 +1618,7 @@ class CRMLead(models.Model):
             'avg_time': record_avg_time,
             'follow_up_do': follow_up_do,
 
-            # 🔥 KPI BARU
+            # ðŸ”¥ KPI BARU
             'email_sent_week': email_sent_week,
         }
+
